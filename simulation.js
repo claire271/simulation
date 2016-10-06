@@ -32,6 +32,7 @@ function apply_labels() {
 apply_labels();
 
 //Button input functions
+
 function start_pressed() {
 	switch(state) {
 	case States.stopped:
@@ -42,7 +43,6 @@ function start_pressed() {
 		setState(States.stopped);
 		break;
 	}
-	apply_labels();
 }
 
 function pause_pressed() {
@@ -57,7 +57,6 @@ function pause_pressed() {
 		setState(States.paused);
 		break;
 	}
-	apply_labels();
 }
 
 function step_pressed() {
@@ -66,10 +65,7 @@ function step_pressed() {
 		step();
 		break;
 	}
-	apply_labels();
 }
-
-//Simulator main functions
 
 //This function sets the main state of the simulator
 //Takes into account the previous states too
@@ -114,6 +110,7 @@ function setState(new_state) {
 	}
 	apply_labels();
 }
+
 function init() {
 	//Actual init stuff now
 	console.log("INIT");
