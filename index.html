@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>Simulation</title>
+		<!-- Bootstrap styles -->
+		<!-- Latest compiled and minified CSS -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+		<!-- Optional theme -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+	</head>
+	<body>
+		<div class="container">
+			<div id="content">
+				<!-- <h2>Simulation</h2> -->
+				<button id="start_button" type="button" class="btn btn-default" onclick="start_pressed()">Start</button>
+				<button id="pause_button" type="button" class="btn btn-default" onclick="pause_pressed()">Start Step</button>
+				<button id="step_button" type="button" class="btn btn-default" onclick="step_pressed()">Step</button>
+				<ul class="nav nav-tabs">
+					<li class="active"><a data-toggle="tab" href="#config">Configuration</a></li>
+					<li><a data-toggle="tab" href="#init">Init Code</a></li>
+					<li><a data-toggle="tab"  href="#step">Step Code</a></li>
+					<li><a data-toggle="tab" href="#panel">Front Panel</a></li>
+					<li><a data-toggle="tab" href="#log">Log</a></li>
+				</ul>
+				<div class="tab-content">
+					<div class="tab-pane active" id="config">
+						Simulation Timestep (Milliseconds): <input type="number" class="form-control" id="timestep_textfield" step="1" value="100"/>
+						Code Run Timestep (Milliseconds): <input type="number" class="form-control" id="codestep_textfield" step="1" value="100"/>
+					</div>
+					<div class="tab-pane" id="init">
+						<textarea id="init_textarea" rows="20" cols="80"></textarea><br/>
+					</div>
+					<div class="tab-pane" id="step">
+						<textarea id="step_textarea" rows="20" cols="80"></textarea><br/>
+					</div>
+					<div class="tab-pane" id="panel">
+					</div>
+					<div class="tab-pane" id="log">
+						<textarea id="out_textarea" rows="20" cols="80"></textarea><br/>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div style="float: left;">
+		</div>
+	</body>
+	<script src="simulation.js"></script>
+	<!-- Jquery scripts -->
+	<script
+	    src="https://code.jquery.com/jquery-3.1.1.min.js"
+	    integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+	    crossorigin="anonymous"></script>
+	<!-- Bootstrap scripts -->
+	<!-- Latest compiled and minified JavaScript -->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+</html>
