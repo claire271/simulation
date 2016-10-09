@@ -14,6 +14,10 @@ var tindex;
 var uis;
 var uindex;
 
+//HTML elements
+var panel = document.getElementById('panel');
+var log = document.getElementById('out_textarea');
+
 //Writing button labels
 function apply_labels() {
 	var start_button = document.getElementById('start_button');
@@ -152,7 +156,11 @@ function internal_init(timestep) {
 	ins.dt = timestep;
 	ins.init = true;
 	tindex = 0;
-	unidex = 0;
+	uindex = 0;
+
+	//Need to clear panel and log too
+	panel.innerHTML = '';
+	log.value = "";
 
 	//Stuff in here should only write back to ins
 	var init_code = document.getElementById('init_textarea').value;
@@ -166,6 +174,7 @@ function internal_step(timestep, initialize) {
 	ins.dt = timestep;
 	ins.init = initialize;
 	tindex = 0;
+	uindex = 0;
 
 	var step_code = document.getElementById('step_textarea').value;
 	eval(step_code);
@@ -222,16 +231,25 @@ function step() {
 
 //Functions
 fns = {};
-function addFunction(name, func) {
+function addFunction(name, func, use_tmp, use_ui) {
 	fns[name] = function() {
+		var tmp;
+		var ui;
 		if(ins.init) {
-			tmps[tindex] = {};
+			if(use_tmp) tmps[tindex] = {};
+			if(use_ui) {
+				uis[uindex] = document.createElement('div');
+				uis[uindex].style = "position: absolute; " + arguments[0];
+				panel.appendChild(uis[uindex]);
+			}
 		}
-		return func(arguments, tmps[tindex++]);
+		if(use_tmp) tmp = tmps[tindex++];
+		if(use_ui) ui = uis[uindex++];
+		return func(arguments, tmp, ui);
 	}
 }
 fns.log = function(text) {
-	document.getElementById('out_textarea').value += text + '\n';
+	log.value += text + '\n';
 }
 addFunction("integral", function(args, tmp) {
 	if(ins.init) {
@@ -242,4 +260,15 @@ addFunction("integral", function(args, tmp) {
 		tmp.acc += args[0] * ins.dt;
 		return tmp.acc;
 	}
-});
+}, true, false);
+addFunction("number_output", function(args, tmp, ui) {
+	if(ins.init) {
+		ui.appendChild(document.createTextNode(args[1]));
+		ui.appendChild(document.createElement('br'));
+		var input = document.createElement('input');
+		input.disabled = true;
+		input.type = 'number';
+		ui.appendChild(input);
+	}
+	ui.lastChild.value = args[2];
+}, false, true);
