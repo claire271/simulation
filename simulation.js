@@ -1,28 +1,60 @@
-//Constants
+/////////////////////////////////////////////
+// Constants
+
+//All possible states of the simulator
 var States = Object.freeze({stopped: 0,
 							running: 1,
 							paused: 2});
-//Simulator Variables
+
+/////////////////////////////////////////////
+// Simulator internal variables
+
+//Current state of the simulator
+//Must be a state in the enum States ^
 var state = States.stopped;
+
+//If the simulator is running on a timer, this will be its ID
 var timerID;
 
-var ins;
-var fns;
-var outs;
+//For functions that require persistent temp storage
 var tmps;
+//For indexing temp variable functions
 var tindex;
+//For functions that write or read from the front panel
 var uis;
+//For indexing UI functions
 var uindex;
 
-//HTML elements
-var panel = document.getElementById('panel');
-var log = document.getElementById('out_textarea');
+/////////////////////////////////////////////
+// Variables used by the simulation
 
-//Writing button labels
+//Previous simulation values
+var ins;
+//New simulation values
+var outs;
+//Functions specifically for the simulator
+var fns;
+
+/////////////////////////////////////////////
+// HTML elements
+
+//The main UI panel for the user simulation
+var panel = document.getElementById('panel');
+//The main debug log for the user simulation
+var log = document.getElementById('out_textarea');
+//Buttons
+var start_button = document.getElementById('start_button');
+var pause_button = document.getElementById('pause_button');
+var step_button = document.getElementById('step_button');
+//Input areas
+var timestep_field = document.getElementById('timestep_textfield');
+var codestep_field = document.getElementById('codestep_textfield');
+//Input fields
+var init_area = document.getElementById('init_textarea');
+var step_area = document.getElementById('step_textarea');
+
+//Writing button labels depending on state
 function apply_labels() {
-	var start_button = document.getElementById('start_button');
-	var pause_button = document.getElementById('pause_button');
-	var step_button = document.getElementById('step_button');
 	switch(state) {
 	case States.stopped:
 		start_button.innerHTML = "Start";
@@ -41,10 +73,11 @@ function apply_labels() {
 
 	}
 }
+
+//Need to apply initial labels
 apply_labels();
 
 //Button input functions
-
 function start_pressed() {
 	switch(state) {
 	case States.stopped:
@@ -56,7 +89,6 @@ function start_pressed() {
 		break;
 	}
 }
-
 function pause_pressed() {
 	switch(state) {
 	case States.paused:
@@ -70,7 +102,6 @@ function pause_pressed() {
 		break;
 	}
 }
-
 function step_pressed() {
 	switch(state) {
 	case States.paused:
@@ -123,7 +154,7 @@ function setState(new_state) {
 }
 
 function init() {
-	var timestep = document.getElementById('timestep_textfield').value;
+	var timestep = timestep_field.value;
 
 	//Bail early if we have any errors
 	if(isNaN(timestep) || !timestep) {
@@ -163,7 +194,7 @@ function internal_init(timestep) {
 	log.value = "";
 
 	//Stuff in here should only write back to ins
-	var init_code = document.getElementById('init_textarea').value;
+	var init_code = init_area.value;
 	eval(init_code);
 	tmps = []; //Just in case
 
@@ -176,15 +207,15 @@ function internal_step(timestep, initialize) {
 	tindex = 0;
 	uindex = 0;
 
-	var step_code = document.getElementById('step_textarea').value;
+	var step_code = step_area.value;
 	eval(step_code);
-	outs.tick = ins.tick + 1;
-	outs.t = outs.tick * timestep;
+	ins.tick++;
+	ins.t = ins.tick * ins.dt;
 	for(var k in outs) ins[k] = outs[k];
 }
 
 function resume() {
-	var codestep = document.getElementById('codestep_textfield').value;
+	var codestep = codestep_field.value;
 
 	//Bail early if we have any errors
 	if(isNaN(codestep) || !codestep) {
@@ -207,7 +238,7 @@ function pause() {
 }
 
 function step() {
-	var timestep = document.getElementById('timestep_textfield').value;
+	var timestep = timestep_field.value;
 
 	//Bail early if we have any errors
 	if(isNaN(timestep) || !timestep) {
