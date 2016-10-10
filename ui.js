@@ -101,6 +101,13 @@ function step_pressed() {
 	}
 }
 
+function setInputDisabled(disabled) {
+	timestep_field.disabled = disabled;
+	codestep_field.disabled = disabled;
+	init_area.disabled = disabled;
+	step_area.disabled = disabled;
+}
+
 //This function sets the main state of the simulator
 //Takes into account the previous states too
 function setState(new_state) {
@@ -109,10 +116,12 @@ function setState(new_state) {
 		switch(new_state) {
 		case States.paused:
 			state = States.paused;
+			setInputDisabled(true);
 			ui_init();
 			break;
 		case States.running:
 			state = States.running;
+			setInputDisabled(true);
 			ui_init() && ui_resume();
 			break;
 		}
@@ -121,6 +130,7 @@ function setState(new_state) {
 		switch(new_state) {
 		case States.stopped:
 			state = States.stopped;
+			setInputDisabled(false);
 			break;
 		case States.running:
 			state = States.running;
@@ -132,6 +142,7 @@ function setState(new_state) {
 		switch(new_state) {
 		case States.stopped:
 			state = States.stopped;
+			setInputDisabled(false);
 			ui_pause();
 			break;
 		case States.paused:
@@ -162,7 +173,31 @@ function ui_init() {
 	//Actual init stuff now
 	console.log("INIT");
 
-	sim_init(+timestep / 1000);
+	//These trys will only catch some errors
+	try {
+		var init_function = eval("(function(ins, outs, fns) {" +
+								 init_area.value +
+								 "})");
+	}
+	catch(err) {
+		alert("Error in init code. See log for details");
+		log.value = err;
+		setState(States.stopped);
+		return;
+	}
+	try {
+		var step_function = eval("(function(ins, outs, fns) {" +
+								 step_area.value +
+								 "})");
+	}
+	catch(err) {
+		alert("Error in step code. See log for details");
+		log.value = err;
+		setState(States.stopped);
+		return;
+	}
+
+	sim_init(+timestep / 1000, init_function, step_function);
 
 	return true;
 }

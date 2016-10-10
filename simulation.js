@@ -9,6 +9,10 @@ var tindex;
 var uis;
 //For indexing UI functions
 var uindex;
+//The actual user simulated init
+var user_init;
+//The actual user simulated step
+var user_step;
 
 /////////////////////////////////////////////
 // Variables used by the simulation
@@ -20,7 +24,7 @@ var outs;
 //Functions specifically for the simulator
 var fns;
 
-function sim_init(timestep) {
+function sim_init(timestep, init_func, step_func) {
 	ins = {};
 	outs = {};
 	tmps = [];
@@ -33,13 +37,18 @@ function sim_init(timestep) {
 	tindex = 0;
 	uindex = 0;
 
+	//Set user functions
+	user_init = init_func;
+	user_step = step_func;
+
 	//Need to clear panel and log too
 	panel.innerHTML = '';
 	log.value = "";
 
 	//Stuff in here should only write back to ins
-	var init_code = init_area.value;
-	eval(init_code);
+	//var init_code = init_area.value;
+	//eval(init_code);
+	user_init(ins, outs, fns);
 	tmps = []; //Just in case
 
 	sim_step(timestep, true);
@@ -51,8 +60,9 @@ function sim_step(timestep, initialize) {
 	tindex = 0;
 	uindex = 0;
 
-	var step_code = step_area.value;
-	eval(step_code);
+	//var step_code = step_area.value;
+	//eval(step_code);
+	user_step(ins, outs, fns);
 	ins.tick++;
 	ins.t = ins.tick * ins.dt;
 	for(var k in outs) ins[k] = outs[k];
