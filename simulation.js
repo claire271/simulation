@@ -24,6 +24,69 @@ var outs;
 //Functions specifically for the simulator
 var fns;
 
+/////////////////////////////////////////////
+//String hash expander function
+function expand_hash(input) {
+	var output = '';
+	//Split into lines
+	for(line of input.split("\n")) {
+		console.log(line)
+		//Search for an equals, but it has to be assignment
+		//Limits are offset from ends to protect from over/under run
+		for(var i = line.length - 1;i > 0;i--) {
+			if(!hash_is_part(line[i]) &&
+			   line[i - 1] == '=') {
+				var offset = -1;
+				//Token only 1 char long
+				if(i > 2 && !hash_is_part(line[i - 2])) {
+					offset = 1;
+				}
+				//Token is 2 chars long
+				else if(i > 3 && !hash_is_part(line[i - 3])) {
+					if(line[i - 2] == '+' ||
+					   line[i - 2] == '-' ||
+					   line[i - 2] == '*' ||
+					   line[i - 2] == '/' ||
+					   line[i - 2] == '%' ||
+					   line[i - 2] == '&' ||
+					   line[i - 2] == '^' ||
+					   line[i - 2] == '|') {
+						offset = 2;
+					}
+				}
+				//Token is 3 chars long
+				else if(i > 4 && !hash_is_part(line[i - 4])) {
+					if((line[i - 2] == '*' && line[i - 3] == '*') ||
+					   (line[i - 2] == '<' && line[i - 3] == '<') ||
+					   (line[i - 2] == '>' && line[i - 3] == '>')) {
+						offset = 3;
+					}
+				}
+				//Token is 4 chars long
+				else if(i > 5 && !hash_is_part(line[i - 5])) {
+					if(line[i - 2] == '>' && line[i - 3] == '>' && line[i - 4] == '>') {
+						offset = 4;
+					}
+				}
+				if(offset > 0) {
+					console.log(i - offset);
+				}
+			}
+		}
+	}
+}
+function hash_is_part(curr) {
+	return curr == '=' || curr == '+' ||
+		curr == '-' || curr == '*' ||
+		curr == '/' || curr == '%' ||
+		curr == '<' || curr == '>' ||
+		curr == '&' || curr == '^' ||
+		curr == '|' || curr == '!';
+}
+
+/////////////////////////////////////////////
+//Step and init Functions
+
 function sim_init(timestep, init_func, step_func) {
 	ins = {};
 	outs = {};
@@ -48,7 +111,17 @@ function sim_init(timestep, init_func, step_func) {
 	//Stuff in here should only write back to ins
 	//var init_code = init_area.value;
 	//eval(init_code);
-	user_init(ins, outs, fns);
+	try {
+		user_init(ins, outs, fns);
+	}
+	catch(err) {
+		alert("Error in init code. See log for details");
+		log.value = "Error in init code.\n";
+		log.value += err + "\n";
+		log.value += "Line:Column - " + err.stack.split("\n")[0].split("eval:")[1];
+		setState(States.stopped);
+		return;
+	}
 	tmps = []; //Just in case
 
 	sim_step(timestep, true);
@@ -62,13 +135,24 @@ function sim_step(timestep, initialize) {
 
 	//var step_code = step_area.value;
 	//eval(step_code);
-	user_step(ins, outs, fns);
+	try {
+		user_step(ins, outs, fns);
+	}
+	catch(err) {
+		alert("Error in step code. See log for details");
+		log.value = "Error in step code.\n";
+		log.value += err + "\n";
+		log.value += "Line:Column - " + err.stack.split("\n")[0].split("eval:")[1];
+		setState(States.stopped);
+		return;
+	}
 	ins.tick++;
 	ins.t = ins.tick * ins.dt;
 	for(var k in outs) ins[k] = outs[k];
 }
 
-//Functions
+/////////////////////////////////////////////
+//Simulation functions
 fns = {};
 function addFunction(name, func, use_tmp, use_ui) {
 	fns[name] = function() {

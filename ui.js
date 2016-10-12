@@ -181,7 +181,9 @@ function ui_init() {
 	}
 	catch(err) {
 		alert("Error in init code. See log for details");
-		log.value = err;
+		log.value = "Error in init code.\n";
+		log.value += err + "\n";
+		log.value += "Line:Column - " + err.stack.split("\n")[0].split("eval:")[1];
 		setState(States.stopped);
 		return;
 	}
@@ -192,7 +194,9 @@ function ui_init() {
 	}
 	catch(err) {
 		alert("Error in step code. See log for details");
-		log.value = err;
+		log.value = "Error in step code.\n";
+		log.value += err + "\n";
+		log.value += "Line:Column - " + err.stack.split("\n")[0].split("eval:")[1];
 		setState(States.stopped);
 		return;
 	}
