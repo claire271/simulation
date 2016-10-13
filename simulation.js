@@ -63,6 +63,8 @@ function expand_hash(input) {
 				if(i > 2 && !hash_is_part(line[i - 2])) {
 					offset = 1;
 				}
+				//Only apply this behavior on plain assignment
+				/*
 				//Token is 2 chars long
 				else if(i > 3 && !hash_is_part(line[i - 3])) {
 					if(line[i - 2] == '+' ||
@@ -90,6 +92,7 @@ function expand_hash(input) {
 						offset = 4;
 					}
 				}
+				*/
 				//We actually have an assigment operator
 				if(offset > 0) {
 					is_input = false;
