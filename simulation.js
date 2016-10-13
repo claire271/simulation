@@ -28,13 +28,35 @@ var fns;
 //String hash expander function
 function expand_hash(input) {
 	var output = '';
+
 	//Split into lines
-	for(line of input.split("\n")) {
-		console.log(line)
-		//Search for an equals, but it has to be assignment
+	for(line of input.split('\n')) {
+		var is_input = true;
+		var inside_array = false;
+
 		//Limits are offset from ends to protect from over/under run
-		for(var i = line.length - 1;i > 0;i--) {
-			if(!hash_is_part(line[i]) &&
+		for(var i = line.length - 1;i >= 0;i--) {
+
+			//Array detection
+			if(!is_input && line[i] == ']') {
+				inside_array = true;
+			}
+			if(!is_input && line[i] == '[') {
+				inside_array = false;
+				is_input = true;
+			}
+
+			//Hash detection and substitution
+			if(line[i] == '#') {
+				line = line.slice(0, i) + (is_input ? 'ins.' : 'outs.') + line.slice(i + 1);
+				if(!inside_array) {
+					is_input = true;
+				}
+			}
+
+			//Assignment operator detection
+			if(i > 0 &&
+			   !hash_is_part(line[i]) &&
 			   line[i - 1] == '=') {
 				var offset = -1;
 				//Token only 1 char long
@@ -68,12 +90,16 @@ function expand_hash(input) {
 						offset = 4;
 					}
 				}
+				//We actually have an assigment operator
 				if(offset > 0) {
-					console.log(i - offset);
+					is_input = false;
 				}
 			}
 		}
+		output += line + '\n';
 	}
+
+	return output;
 }
 function hash_is_part(curr) {
 	return curr == '=' || curr == '+' ||
