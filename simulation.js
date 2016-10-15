@@ -152,6 +152,7 @@ function sim_init(timestep, init_func, step_func) {
 		return;
 	}
 	tmps = []; //Just in case
+	for(var k in outs) ins[k] = outs[k];
 
 	sim_step(timestep, true);
 }

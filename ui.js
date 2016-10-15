@@ -176,7 +176,7 @@ function ui_init() {
 	//These trys will only catch some errors
 	try {
 		var init_function = eval("(function(ins, outs, fns) {" +
-								 init_area.value +
+								 expand_hash(init_area.value) +
 								 "})");
 	}
 	catch(err) {
@@ -189,7 +189,7 @@ function ui_init() {
 	}
 	try {
 		var step_function = eval("(function(ins, outs, fns) {" +
-								 step_area.value +
+								 expand_hash(step_area.value) +
 								 "})");
 	}
 	catch(err) {
