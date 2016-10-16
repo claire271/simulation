@@ -28,6 +28,10 @@
 					<div class="tab-pane active" id="config">
 						Simulation Timestep (Milliseconds): <input type="number" class="form-control" id="timestep_textfield" step="1" value="100"/>
 						Code Run Timestep (Milliseconds): <input type="number" class="form-control" id="codestep_textfield" step="1" value="100"/>
+						Filename: <input type="text" class="form-control" id="filename_textfield">
+						<button id="save_button" type="button" class="btn btn-default">Save Simulation</button>
+						<input id="file_selector" type="file">
+						<button id="open_button" type="button" class="btn btn-default">Open Simulation</button>
 					</div>
 					<div class="tab-pane" id="init">
 						<textarea id="init_textarea" rows="20" cols="80" style="font-family: Liberation Mono, monospace;"></textarea><br/>
@@ -56,4 +60,5 @@
 	<!-- Bootstrap scripts -->
 	<!-- Latest compiled and minified JavaScript -->
 	<script src="libraries/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+	<script src="libraries/filesaver/FileSaver.js"></script>
 </html>

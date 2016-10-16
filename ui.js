@@ -35,6 +35,11 @@ var codestep_field = document.getElementById('codestep_textfield');
 //Input fields
 var init_area = document.getElementById('init_textarea');
 var step_area = document.getElementById('step_textarea');
+//File saving and reading
+var save_button = document.getElementById('save_button');
+var filename_field = document.getElementById('filename_textfield');
+var open_button = document.getElementById('open_button');
+var file_selector = document.getElementById('file_selector');
 
 //Set up button actions
 start_button.onclick = start_pressed;
@@ -250,4 +255,54 @@ function ui_step() {
 	sim_step(+timestep / 1000, false);
 
 	return true;
+}
+
+//Setting up file stuff
+save_button.onclick = function() {
+	var blob = new Blob(["////////////////////\n//Configuration\n////////////////////\n",
+						 "timestep ", timestep_field.value,
+						 "\ncodestep ", codestep_field.value,
+						 "\n////////////////////\n//Init Code\n////////////////////\n",
+						 init_area.value,
+						 "\n////////////////////\n//Step Code\n////////////////////\n",
+						 step_area.value], {type: "text/plain;charset=utf-8"});
+	saveAs(blob, filename_field.value);
+}
+open_button.onclick = function() {
+	var reader = new FileReader();
+	reader.onloadend = function() {
+		//Actually handle parsing it now
+		var lines = reader.result.split('\n');
+		var mode = '';
+		var init_text = '';
+		var step_text = '';
+		for(var i = 0;i < lines.length;i++) {
+			//Switching between the modes
+			if(i < lines.length - 2 &&
+			   lines[i] == '////////////////////' &&
+			   lines[i + 2] == '////////////////////') {
+				mode = lines[i + 1];
+				i += 2;
+				continue;
+			}
+			if(mode == '//Configuration') {
+				var parts = lines[i].split(' ');
+				window[parts[0] + '_field'].value = parts.slice(1).join(' ');
+			}
+			else if(mode == '//Init Code') {
+				init_text += lines[i] + '\n';
+			}
+			else if(mode == '//Step Code') {
+				step_text += lines[i] + '\n';
+			}
+		}
+
+		init_area.value = init_text.replace(/\s$/, '');
+		step_area.value = step_text.replace(/\s$/, '');
+	}
+	reader.onerror = function () {
+		alert('Error reading file');
+	}
+	reader.readAsText(file_selector.files[0]);
+	filename_field.value = file_selector.files[0].name;
 }
