@@ -218,10 +218,34 @@ addFunction("number_output", function(args, tmp, ui) {
 	if(ins.init) {
 		ui.appendChild(document.createTextNode(args[1]));
 		ui.appendChild(document.createElement('br'));
-		var input = document.createElement('input');
-		input.disabled = true;
-		input.type = 'number';
-		ui.appendChild(input);
+		tmp.input = document.createElement('input');
+		tmp.input.disabled = true;
+		tmp.input.type = 'number';
+		ui.appendChild(tmp.input);
 	}
-	ui.lastChild.value = args[2];
-}, false, true);
+	tmp.input.value = args[2];
+}, true, true);
+addFunction("number_input", function(args, tmp, ui) {
+	if(ins.init) {
+		ui.appendChild(document.createTextNode(args[1]));
+		ui.appendChild(document.createElement('br'));
+		tmp.input = document.createElement('input');
+		tmp.input.type = 'number';
+		ui.appendChild(tmp.input);
+		tmp.input.onchange = function() {
+			if(tmp.input.value != "") {
+				tmp.val = tmp.input.value;
+			}
+		};
+
+		tmp.val = args[2];
+		tmp.input.value = tmp.val;
+	}
+	return tmp.val;
+}, true, true);
+
+addFunction("graph", function(args, tmp, ui) {
+	if(ins.init) {
+		
+	}
+}, true, true);
