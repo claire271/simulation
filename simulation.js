@@ -245,28 +245,84 @@ addFunction("number_input", function(args, tmp, ui) {
 }, true, true);
 addFunction("graph", function(args, tmp, ui) {
 	if(ins.init) {
+		//Initial creation of label and graph view
 		ui.appendChild(document.createTextNode(args[1]));
 		ui.appendChild(document.createElement('br'));
-		tmp.output = document.createElement('svg');
-		tmp.output.style.position = 'absolute';
-		tmp.output.style.left = '0px';
-		tmp.output.style.top = '0px';
-		tmp.output.style.width = '100%';
-		tmp.output.style.height = '100%';
-		ui.appendChild(tmp.output);
+		tmp.output = d3.select(ui).append('svg')
+			.style('position', 'absolute')
+			.style('left', '0px').style('top', '0px')
+			.style('width', '100%').style('height', '100%');
 
-		tmp.width = tmp.output.clientWidth;
-		tmp.height = tmp.output.clientHeight;
+		//Create groups
+		tmp.ggrid = tmp.output.append('g');
+		tmp.ggraphs = tmp.output.append('g');
+		tmp.glabels = tmp.output.append('g');
+		tmp.guline = tmp.output.append('g');
+
+		//Getting the view width and height for line width purposes
+		tmp.width = tmp.output.node().getBoundingClientRect().width;
+		tmp.height = tmp.output.node().getBoundingClientRect().height;
+
+		//Shift for easier drawing
+		//tmp.output.attr('viewBox', '-1 0 ' + tmp.width + ' ' + tmp.height);
+		//tmp.output.style('font-size','.1px')
+
+		tmp.config = {t_width: 0, t_spacing: 0, maxs: [], mins: [], spacing: []};
+		tmp.tlines = [];
+
+		//Create the updater line
+		tmp.toffset = 0;
+		tmp.uline = tmp.guline.append('line')
+			.attr('x1', 0)
+			.attr('y1', 0)
+			.attr('x2', 0)
+			.attr('y2', tmp.height)
+			.attr('stroke-width', 2)
+			.attr('stroke', 'violet');
 	}
 
-	var config = args[2];
-
-	var t_count = Math.round(config.t_width/config.t_spacing);
-	for(var i = 0;i <= t_count;i++) {
+	//Modify counter and graph stuff if the time width has changed
+	if(tmp.config.t_width != args[2].t_width) {
 	}
 
-	var line = document.createElementNS('http://www.w3.org/2000/svg','line');
-	tmp.output.appendChild(line);
+	//Change offset if we're going off the edge of the screen
+	if(ins.t - tmp.toffset >= args[2].t_width) {
+		tmp.toffset += args[2].t_width;
+	}
+	//Move the update line
+	var upos = tmp.width * (ins.t - tmp.toffset) / args[2].t_width;
+	tmp.uline.attr('x1', upos).attr('x2', upos);
+
+	//See if the time spacing stuff has changed
+	if(tmp.config.t_width != args[2].t_width ||
+	   tmp.config.t_spacing != args[2].t_spacing) {
+		//Copy over parameters
+		tmp.config.t_width = args[2].t_width;
+		tmp.config.t_spacing = args[2].t_spacing;
+
+		//Removing old lines
+		for(var i = 0;i < tmp.tlines.length;i++) {
+			tmp.tlines[i].remove();
+		}
+		tmp.tlines = [];
+
+		//Adding actual lines
+		var t_count = Math.round(tmp.config.t_width/tmp.config.t_spacing);
+		for(var i = 0;i <= t_count;i++) {
+			tmp.tlines[i] = tmp.ggrid.append('line')
+				.attr('x1', tmp.width * i/t_count)
+				.attr('y1', 0)
+				.attr('x2', tmp.width * i/t_count)
+				.attr('y2', tmp.height)
+				.attr('stroke-width', 1)
+				.attr('stroke', 'gray');
+		}
+	}
+
+	var changed = false;
+
+	//var line = document.createElementNS('http://www.w3.org/2000/svg','line');
+	//tmp.output.appendChild(line);
 
 
 }, true, true);
