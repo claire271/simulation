@@ -243,9 +243,30 @@ addFunction("number_input", function(args, tmp, ui) {
 	}
 	return tmp.val;
 }, true, true);
-
 addFunction("graph", function(args, tmp, ui) {
 	if(ins.init) {
-		
+		ui.appendChild(document.createTextNode(args[1]));
+		ui.appendChild(document.createElement('br'));
+		tmp.output = document.createElement('svg');
+		tmp.output.style.position = 'absolute';
+		tmp.output.style.left = '0px';
+		tmp.output.style.top = '0px';
+		tmp.output.style.width = '100%';
+		tmp.output.style.height = '100%';
+		ui.appendChild(tmp.output);
+
+		tmp.width = tmp.output.clientWidth;
+		tmp.height = tmp.output.clientHeight;
 	}
+
+	var config = args[2];
+
+	var t_count = Math.round(config.t_width/config.t_spacing);
+	for(var i = 0;i <= t_count;i++) {
+	}
+
+	var line = document.createElementNS('http://www.w3.org/2000/svg','line');
+	tmp.output.appendChild(line);
+
+
 }, true, true);

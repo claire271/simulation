@@ -178,6 +178,9 @@ function ui_init() {
 	//Actual init stuff now
 	console.log("INIT");
 
+	//Switch to front panel view
+	$('#button-panel').trigger('click');
+
 	//These trys will only catch some errors
 	try {
 		var init_function = eval("(function(ins, outs, fns) {" +

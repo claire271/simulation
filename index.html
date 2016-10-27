@@ -8,7 +8,7 @@
 		<link rel="stylesheet" href="libraries/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 
 		<!-- Optional theme -->
-		<link rel="stylesheet" href="libraries/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+		<!-- <link rel="stylesheet" href="libraries/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous"> -->
 	</head>
 	<body>
 		<div class="container">
@@ -18,11 +18,11 @@
 				<button id="pause_button" type="button" class="btn btn-default"></button>
 				<button id="step_button" type="button" class="btn btn-default"></button>
 				<ul class="nav nav-tabs">
-					<li class="active"><a data-toggle="tab" href="#config">Configuration</a></li>
-					<li><a data-toggle="tab" href="#init">Init Code</a></li>
-					<li><a data-toggle="tab"  href="#step">Step Code</a></li>
-					<li><a data-toggle="tab" href="#panel">Front Panel</a></li>
-					<li><a data-toggle="tab" href="#log">Log</a></li>
+					<li class="active"><a data-toggle="tab" id="button-config" href="#config">Configuration</a></li>
+					<li><a data-toggle="tab" id="button-init" href="#init">Init Code</a></li>
+					<li><a data-toggle="tab" id="button-step" href="#step">Step Code</a></li>
+					<li><a data-toggle="tab" id="button-panel" href="#panel">Front Panel</a></li>
+					<li><a data-toggle="tab" id="button-log" href="#log">Log</a></li>
 				</ul>
 				<div class="tab-content">
 					<div class="tab-pane active" id="config">
