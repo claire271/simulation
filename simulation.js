@@ -244,9 +244,18 @@ addFunction("number_input", function(args, tmp, ui) {
 	return tmp.val;
 }, true, true);
 addFunction("graph", function(args, tmp, ui) {
+	const vlwidth = 50;
 	if(ins.init) {
+		//Number of plots drawn on this
+		tmp.vcount = args[2].maxs.length;
+
 		//Initial creation of label and graph view
-		ui.appendChild(document.createTextNode(args[1])); //Label (consistent with other UI elements)
+		var label_div = document.createElement('div');
+		label_div.style.position = 'absolute';
+		label_div.style.top = '0px';
+		label_div.style.left = vlwidth * (tmp.vcount + 1) + 'px';
+		label_div.appendChild(document.createTextNode(args[1])); //Label (consistent with other UI elements)
+		ui.appendChild(label_div);
 		ui.appendChild(document.createElement('br'));
 		//Actual view being drawn on
 		tmp.output = d3.select(ui).append('svg')
@@ -257,10 +266,10 @@ addFunction("graph", function(args, tmp, ui) {
 		//Getting the view width and height for line width purposes
 		tmp.rwidth = tmp.output.node().getBoundingClientRect().width;   //(Real) width [of the entire svg]
 		tmp.rheight = tmp.output.node().getBoundingClientRect().height; //(Real) height [of the entire svg]
-		tmp.offx = 25;                    //How much space is on the left of the plot
-		tmp.offy = 25;                    //How much space is on top of the plot
-		tmp.width = tmp.rwidth - 50;      //width [of the plot]
-		tmp.height = tmp.rheight - 50;    //height [of the plot]
+		tmp.offx = vlwidth * (tmp.vcount + 1);                          //How much space is on the left of the plot
+		tmp.offy = 25;                                                  //How much space is on top of the plot
+		tmp.width = tmp.rwidth - vlwidth * (tmp.vcount + 2);            //width [of the plot]
+		tmp.height = tmp.rheight - 50;                                  //height [of the plot]
 
 		//Shift for easier drawing
 		tmp.output.attr('viewBox', -tmp.offx + ' ' + -tmp.offy + ' ' + tmp.rwidth + ' ' + tmp.rheight);
@@ -296,8 +305,16 @@ addFunction("graph", function(args, tmp, ui) {
 
 		//Validate the configuration
 		if(tmp.config.maxs.length != tmp.config.mins.length ||
-		   tmp.config.maxs.length != tmp.config.spacings.length) {
-			throw 'ERROR: Maxs, mins, and spacings of a grapher must match in length.';
+		   tmp.config.maxs.length != tmp.config.spacings.length ||
+		   tmp.config.maxs.length != tmp.config.colors.length) {
+			throw 'ERROR: Maxs, mins, spacings, and colors of a grapher must match in length.';
+		}
+
+		//(Set Time) labels
+		tmp.stlabels = function(tmp) {
+			for(var i = 0;i < tmp.tlabels.length;i++) {
+				tmp.tlabels[i].text((tmp.toffset + tmp.config.t_width * i/(tmp.tlabels.length - 1)).toPrecision(3));
+			}
 		}
 
 		tmp.tlabels = []; //(Time) labels
@@ -314,9 +331,12 @@ addFunction("graph", function(args, tmp, ui) {
 			for(var i = 0;i <= t_count;i++) {
 				tmp.tlabels[i] = tmp.glabels.append('text')
 					.attr('x', tmp.width * i/t_count)
-					.attr('y', tmp.height + 15)
-					.text(tmp.toffset + tmp.config.t_width * i/t_count);
+					.attr('y', tmp.height + 2)
+					.attr('dominant-baseline', 'hanging')
+					.attr('text-anchor', 'middle');
+
 			}
+			tmp.stlabels(tmp);
 		};
 		tmp.rtlabels(tmp);
 
@@ -353,18 +373,27 @@ addFunction("graph", function(args, tmp, ui) {
 			tmp.vlabels = [];
 
 			//Create new labels
-			var t_count = Math.round(tmp.config.t_width/tmp.config.t_spacing);
-			for(var i = 0;i <= t_count;i++) {
-				tmp.vlabels[i] = tmp.glabels.append('text')
-					.attr('x', tmp.width * i/t_count)
-					.attr('y', tmp.height + 15)
-					.text(tmp.toffset + tmp.config.t_width * i/t_count);
+			for(var j = 0;j < tmp.config.maxs.length;j++) {
+				var v_width = tmp.config.maxs[j] - tmp.config.mins[j];
+				var v_spacing = tmp.config.spacings[j];
+				var v_count = Math.abs(Math.round(v_width/v_spacing));
+				var v_offset = tmp.config.mins[j];
+				var v_color = tmp.config.colors[j];
+				for(var i = 0;i <= v_count;i++) {
+					tmp.vlabels[tmp.vlabels.length] = tmp.glabels.append('text')
+						.attr('x', -vlwidth * j - 10)
+						.attr('y', tmp.height * (1 - i/v_count))
+						.attr('fill', v_color)
+						.attr('dominant-baseline', 'central')
+						.attr('text-anchor', 'end')
+						.text((v_offset + v_width * i/v_count).toPrecision(3));
+				}
 			}
 		};
-		//tmp.rvlabels(tmp);
+		tmp.rvlabels(tmp);
 
 		tmp.vlines = []; //(Values) lines
-		//(Regenerate Time) lines
+		//(Regenerate Value) lines
 		tmp.rvlines = function(tmp) {
 			//Removing old lines
 			for(var i = 0;i < tmp.vlines.length;i++) {
@@ -373,19 +402,23 @@ addFunction("graph", function(args, tmp, ui) {
 			tmp.vlines = [];
 
 			//Adding actual lines
-			var t_count = Math.round(tmp.config.t_width/tmp.config.t_spacing);
-			for(var i = 0;i <= t_count;i++) {
-				tmp.vlines[i] = tmp.ggrid.append('line')
-					.attr('x1', tmp.width * i/t_count)
-					.attr('y1', 0)
-					.attr('x2', tmp.width * i/t_count)
-					.attr('y2', tmp.height)
-					.attr('stroke-width', 1)
-					.attr('stroke', 'gray');
+			for(var j = 0;j < tmp.config.maxs.length;j++) {
+				var v_width = tmp.config.maxs[j] - tmp.config.mins[j];
+				var v_spacing = tmp.config.spacings[j];
+				var v_count = Math.abs(Math.round(v_width/v_spacing));
+
+				for(var i = 0;i <= v_count;i++) {
+					tmp.vlines[tmp.vlines.length] = tmp.ggrid.append('line')
+						.attr('x1', -vlwidth * j)
+						.attr('y1', tmp.height * i/v_count)
+						.attr('x2', tmp.width)
+						.attr('y2', tmp.height * i/v_count)
+						.attr('stroke-width', 1)
+						.attr('stroke', 'gray');
+				}
 			}
 		};
-		//tmp.rvlines(tmp);
-
+		tmp.rvlines(tmp);
 
 		//(Config) changed [detection]
 		tmp.cchanged = function(tmp, config) {
@@ -399,6 +432,7 @@ addFunction("graph", function(args, tmp, ui) {
 			if(output.old_config.maxs.length != tmp.config.maxs.length) throw 'ERROR: Maxs length cannot change during runtime for a grapher';
 			if(output.old_config.mins.length != tmp.config.mins.length) throw 'ERROR: mins length cannot change during runtime for a grapher';
 			if(output.old_config.spacings.length != tmp.config.spacings.length) throw 'ERROR: spacings length cannot change during runtime for a grapher';
+			if(output.old_config.colors.length != tmp.config.colors.length) throw 'ERROR: colors length cannot change during runtime for a grapher';
 
 			//Make sure everything is numbers
 			tmp.config.t_width = +tmp.config.t_width;
@@ -443,10 +477,17 @@ addFunction("graph", function(args, tmp, ui) {
 		tmp.rtlabels(tmp);
 	}
 
+	//Modify the value lines and labels if stuff has changed
+	if(changed.changed.maxs || changed.changed.mins ||
+	   changed.changed.spacings || changed.changed.colors) {
+		tmp.rvlines(tmp);
+		tmp.rvlabels(tmp);
+	}
+
 	//Change offset if we're going off the edge of the screen
 	while(ins.t - tmp.toffset >= tmp.config.t_width) {
 		tmp.toffset += tmp.config.t_width;
-		tmp.rtlabels(tmp);
+		tmp.stlabels(tmp);
 	}
 
 	//Move the update line
