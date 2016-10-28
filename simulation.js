@@ -246,32 +246,43 @@ addFunction("number_input", function(args, tmp, ui) {
 addFunction("graph", function(args, tmp, ui) {
 	if(ins.init) {
 		//Initial creation of label and graph view
-		ui.appendChild(document.createTextNode(args[1]));
+		ui.appendChild(document.createTextNode(args[1])); //Label (consistent with other UI elements)
 		ui.appendChild(document.createElement('br'));
+		//Actual view being drawn on
 		tmp.output = d3.select(ui).append('svg')
 			.style('position', 'absolute')
 			.style('left', '0px').style('top', '0px')
 			.style('width', '100%').style('height', '100%');
 
-		//Create groups
-		tmp.ggrid = tmp.output.append('g');
-		tmp.ggraphs = tmp.output.append('g');
-		tmp.glabels = tmp.output.append('g');
-		tmp.guline = tmp.output.append('g');
-
 		//Getting the view width and height for line width purposes
-		tmp.width = tmp.output.node().getBoundingClientRect().width;
-		tmp.height = tmp.output.node().getBoundingClientRect().height;
+		tmp.rwidth = tmp.output.node().getBoundingClientRect().width;   //(Real) width [of the entire svg]
+		tmp.rheight = tmp.output.node().getBoundingClientRect().height; //(Real) height [of the entire svg]
+		tmp.offx = 25;                    //How much space is on the left of the plot
+		tmp.offy = 25;                    //How much space is on top of the plot
+		tmp.width = tmp.rwidth - 50;      //width [of the plot]
+		tmp.height = tmp.rheight - 50;    //height [of the plot]
 
 		//Shift for easier drawing
-		//tmp.output.attr('viewBox', '-1 0 ' + tmp.width + ' ' + tmp.height);
-		//tmp.output.style('font-size','.1px')
+		tmp.output.attr('viewBox', -tmp.offx + ' ' + -tmp.offy + ' ' + tmp.rwidth + ' ' + tmp.rheight);
 
-		tmp.config = {t_width: 0, t_spacing: 0, maxs: [], mins: [], spacing: []};
-		tmp.tlines = [];
+		//Create groups for proper ordering
+		tmp.ggrid = tmp.output.append('g');   //(Group) grid
+		tmp.ggraphs = tmp.output.append('g'); //(Group) graphs
+		tmp.glabels = tmp.output.append('g'); //(Group) labels
+		tmp.guline = tmp.output.append('g');  //(Group update) line
 
-		//Create the updater line
-		tmp.toffset = 0;
+		//Draw outline box
+		tmp.ggrid.append('rect')
+			.attr('x', -1)
+			.attr('y', -1)
+			.attr('width', tmp.width)
+			.attr('height', tmp.height)
+			.attr('fill', 'none')
+			.attr('stroke', 'gray')
+			.attr('stroke-width', 1);
+
+		//Create the updater line and offset for it
+		tmp.toffset = 0; //Time offset [time between the left edge of the graph and the update line]
 		tmp.uline = tmp.guline.append('line')
 			.attr('x1', 0)
 			.attr('y1', 0)
@@ -279,50 +290,169 @@ addFunction("graph", function(args, tmp, ui) {
 			.attr('y2', tmp.height)
 			.attr('stroke-width', 2)
 			.attr('stroke', 'violet');
+
+		//Some initial configuration
+		tmp.config = args[2];
+
+		//Validate the configuration
+		if(tmp.config.maxs.length != tmp.config.mins.length ||
+		   tmp.config.maxs.length != tmp.config.spacings.length) {
+			throw 'ERROR: Maxs, mins, and spacings of a grapher must match in length.';
+		}
+
+		tmp.tlabels = []; //(Time) labels
+		//(Regenerate Time) labels
+		tmp.rtlabels = function(tmp) {
+			//Remove old labels
+			for(var i = 0;i < tmp.tlabels.length;i++) {
+				tmp.tlabels[i].remove();
+			}
+			tmp.tlabels = [];
+
+			//Create new labels
+			var t_count = Math.round(tmp.config.t_width/tmp.config.t_spacing);
+			for(var i = 0;i <= t_count;i++) {
+				tmp.tlabels[i] = tmp.glabels.append('text')
+					.attr('x', tmp.width * i/t_count)
+					.attr('y', tmp.height + 15)
+					.text(tmp.toffset + tmp.config.t_width * i/t_count);
+			}
+		};
+		tmp.rtlabels(tmp);
+
+		tmp.tlines = []; //(Time) lines
+		//(Regenerate Time) lines
+		tmp.rtlines = function(tmp) {
+			//Removing old lines
+			for(var i = 0;i < tmp.tlines.length;i++) {
+				tmp.tlines[i].remove();
+			}
+			tmp.tlines = [];
+
+			//Adding actual lines
+			var t_count = Math.round(tmp.config.t_width/tmp.config.t_spacing);
+			for(var i = 0;i <= t_count;i++) {
+				tmp.tlines[i] = tmp.ggrid.append('line')
+					.attr('x1', tmp.width * i/t_count)
+					.attr('y1', 0)
+					.attr('x2', tmp.width * i/t_count)
+					.attr('y2', tmp.height)
+					.attr('stroke-width', 1)
+					.attr('stroke', 'gray');
+			}
+		};
+		tmp.rtlines(tmp);
+
+		tmp.vlabels = []; //(Values) labels
+		//(Regenerate Values) labels
+		tmp.rvlabels = function(tmp) {
+			//Remove old labels
+			for(var i = 0;i < tmp.vlabels.length;i++) {
+				tmp.vlabels[i].remove();
+			}
+			tmp.vlabels = [];
+
+			//Create new labels
+			var t_count = Math.round(tmp.config.t_width/tmp.config.t_spacing);
+			for(var i = 0;i <= t_count;i++) {
+				tmp.vlabels[i] = tmp.glabels.append('text')
+					.attr('x', tmp.width * i/t_count)
+					.attr('y', tmp.height + 15)
+					.text(tmp.toffset + tmp.config.t_width * i/t_count);
+			}
+		};
+		//tmp.rvlabels(tmp);
+
+		tmp.vlines = []; //(Values) lines
+		//(Regenerate Time) lines
+		tmp.rvlines = function(tmp) {
+			//Removing old lines
+			for(var i = 0;i < tmp.vlines.length;i++) {
+				tmp.vlines[i].remove();
+			}
+			tmp.vlines = [];
+
+			//Adding actual lines
+			var t_count = Math.round(tmp.config.t_width/tmp.config.t_spacing);
+			for(var i = 0;i <= t_count;i++) {
+				tmp.vlines[i] = tmp.ggrid.append('line')
+					.attr('x1', tmp.width * i/t_count)
+					.attr('y1', 0)
+					.attr('x2', tmp.width * i/t_count)
+					.attr('y2', tmp.height)
+					.attr('stroke-width', 1)
+					.attr('stroke', 'gray');
+			}
+		};
+		//tmp.rvlines(tmp);
+
+
+		//(Config) changed [detection]
+		tmp.cchanged = function(tmp, config) {
+			var output = {};
+			//Save the old configuration
+			output.old_config = tmp.config;
+			//Copy over new config
+			tmp.config = config;
+
+			//Bail if any of the dimensions of the values changed
+			if(output.old_config.maxs.length != tmp.config.maxs.length) throw 'ERROR: Maxs length cannot change during runtime for a grapher';
+			if(output.old_config.mins.length != tmp.config.mins.length) throw 'ERROR: mins length cannot change during runtime for a grapher';
+			if(output.old_config.spacings.length != tmp.config.spacings.length) throw 'ERROR: spacings length cannot change during runtime for a grapher';
+
+			//Make sure everything is numbers
+			tmp.config.t_width = +tmp.config.t_width;
+			tmp.config.t_spacing = +tmp.config.t_spacing;
+			for(var i = 0;i < tmp.config.maxs.length;i++) {
+				tmp.config.maxs[i] = +tmp.config.maxs[i];
+			}
+			for(var i = 0;i < tmp.config.mins.length;i++) {
+				tmp.config.mins[i] = +tmp.config.mins[i];
+			}
+			for(var i = 0;i < tmp.config.spacings.length;i++) {
+				tmp.config.spacings[i] = +tmp.config.spacings[i];
+			}
+
+			//Checking if any parameters changed
+			output.changed = {};
+			output.changed.t_width = output.old_config.t_width != tmp.config.t_width;
+			output.changed.t_spacing = output.old_config.t_spacing != tmp.config.t_spacing;
+			output.changed.maxs = false;
+			for(var i = 0;i < tmp.config.maxs.length;i++) {
+				output.changed.maxs |= output.old_config.maxs[i] != tmp.config.maxs[i];
+			}
+			output.changed.mins = false;
+			for(var i = 0;i < tmp.config.mins.length;i++) {
+				output.changed.mins |= output.old_config.mins[i] != tmp.config.mins[i];
+			}
+			output.changed.spacings = false;
+			for(var i = 0;i < tmp.config.spacings.length;i++) {
+				output.changed.spacings |= output.old_config.spacings[i] != tmp.config.spacings[i];
+			}
+
+			return output;
+		};
 	}
 
-	//Modify counter and graph stuff if the time width has changed
-	if(tmp.config.t_width != args[2].t_width) {
+	//Find changes to the UI at the beginning of each cycle
+	var changed = tmp.cchanged(tmp, args[2]);
+
+	//Modify time lines and labels if stuff has changed
+	if(changed.changed.t_width || changed.changed.t_spacing) {
+		tmp.rtlines(tmp);
+		tmp.rtlabels(tmp);
 	}
 
 	//Change offset if we're going off the edge of the screen
-	if(ins.t - tmp.toffset >= args[2].t_width) {
-		tmp.toffset += args[2].t_width;
+	while(ins.t - tmp.toffset >= tmp.config.t_width) {
+		tmp.toffset += tmp.config.t_width;
+		tmp.rtlabels(tmp);
 	}
+
 	//Move the update line
 	var upos = tmp.width * (ins.t - tmp.toffset) / args[2].t_width;
 	tmp.uline.attr('x1', upos).attr('x2', upos);
 
-	//See if the time spacing stuff has changed
-	if(tmp.config.t_width != args[2].t_width ||
-	   tmp.config.t_spacing != args[2].t_spacing) {
-		//Copy over parameters
-		tmp.config.t_width = args[2].t_width;
-		tmp.config.t_spacing = args[2].t_spacing;
-
-		//Removing old lines
-		for(var i = 0;i < tmp.tlines.length;i++) {
-			tmp.tlines[i].remove();
-		}
-		tmp.tlines = [];
-
-		//Adding actual lines
-		var t_count = Math.round(tmp.config.t_width/tmp.config.t_spacing);
-		for(var i = 0;i <= t_count;i++) {
-			tmp.tlines[i] = tmp.ggrid.append('line')
-				.attr('x1', tmp.width * i/t_count)
-				.attr('y1', 0)
-				.attr('x2', tmp.width * i/t_count)
-				.attr('y2', tmp.height)
-				.attr('stroke-width', 1)
-				.attr('stroke', 'gray');
-		}
-	}
-
-	var changed = false;
-
-	//var line = document.createElementNS('http://www.w3.org/2000/svg','line');
-	//tmp.output.appendChild(line);
 
 
 }, true, true);
