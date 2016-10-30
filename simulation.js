@@ -281,7 +281,7 @@ addFunction("graph", function(args, tmp, ui) {
 		var label_div = document.createElement('div');
 		label_div.style.position = 'absolute';
 		label_div.style.top = '0px';
-		label_div.style.left = vlwidth * (tmp.vcount + 1) + 'px';
+		label_div.style.left = vlwidth * tmp.vcount + 'px';
 		label_div.appendChild(document.createTextNode(args[1])); //Label (consistent with other UI elements)
 		ui.appendChild(label_div);
 		ui.appendChild(document.createElement('br'));
@@ -294,9 +294,9 @@ addFunction("graph", function(args, tmp, ui) {
 		//Getting the view width and height for line width purposes
 		tmp.rwidth = tmp.output.node().getBoundingClientRect().width;   //(Real) width [of the entire svg]
 		tmp.rheight = tmp.output.node().getBoundingClientRect().height; //(Real) height [of the entire svg]
-		tmp.offx = vlwidth * (tmp.vcount + 1);                          //How much space is on the left of the plot
+		tmp.offx = vlwidth * tmp.vcount;                                //How much space is on the left of the plot
 		tmp.offy = 25;                                                  //How much space is on top of the plot
-		tmp.width = tmp.rwidth - vlwidth * (tmp.vcount + 2);            //width [of the plot]
+		tmp.width = tmp.rwidth - vlwidth * (tmp.vcount + 1);            //width [of the plot]
 		tmp.height = tmp.rheight - 50;                                  //height [of the plot]
 
 		//Shift for easier drawing
