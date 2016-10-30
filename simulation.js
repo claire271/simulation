@@ -67,30 +67,30 @@ function expand_hash(input) {
 				/*
 				//Token is 2 chars long
 				else if(i > 3 && !hash_is_part(line[i - 3])) {
-					if(line[i - 2] == '+' ||
-					   line[i - 2] == '-' ||
-					   line[i - 2] == '*' ||
-					   line[i - 2] == '/' ||
-					   line[i - 2] == '%' ||
-					   line[i - 2] == '&' ||
-					   line[i - 2] == '^' ||
-					   line[i - 2] == '|') {
-						offset = 2;
-					}
+				if(line[i - 2] == '+' ||
+				line[i - 2] == '-' ||
+				line[i - 2] == '*' ||
+				line[i - 2] == '/' ||
+				line[i - 2] == '%' ||
+				line[i - 2] == '&' ||
+				line[i - 2] == '^' ||
+				line[i - 2] == '|') {
+				offset = 2;
+				}
 				}
 				//Token is 3 chars long
 				else if(i > 4 && !hash_is_part(line[i - 4])) {
-					if((line[i - 2] == '*' && line[i - 3] == '*') ||
-					   (line[i - 2] == '<' && line[i - 3] == '<') ||
-					   (line[i - 2] == '>' && line[i - 3] == '>')) {
-						offset = 3;
-					}
+				if((line[i - 2] == '*' && line[i - 3] == '*') ||
+				(line[i - 2] == '<' && line[i - 3] == '<') ||
+				(line[i - 2] == '>' && line[i - 3] == '>')) {
+				offset = 3;
+				}
 				}
 				//Token is 4 chars long
 				else if(i > 5 && !hash_is_part(line[i - 5])) {
-					if(line[i - 2] == '>' && line[i - 3] == '>' && line[i - 4] == '>') {
-						offset = 4;
-					}
+				if(line[i - 2] == '>' && line[i - 3] == '>' && line[i - 4] == '>') {
+				offset = 4;
+				}
 				}
 				*/
 				//We actually have an assigment operator
@@ -184,6 +184,7 @@ function sim_step(timestep, initialize) {
 /////////////////////////////////////////////
 //Simulation functions
 fns = {};
+var Sim = fns;
 function addFunction(name, func, use_tmp, use_ui) {
 	fns[name] = function() {
 		var tmp;
@@ -609,3 +610,95 @@ addFunction("graph", function(args, tmp, ui) {
 			.attr('display', 'inline');
 	}
 }, true, true);
+
+//Taken from https://github.com/jamesbloomer/node-ziggurat
+addFunction("nrandom", function(args, tmp) {
+	if(ins.init) {
+		tmp.jsr = 123456789;
+
+		tmp.wn = Array(128);
+		tmp.fn = Array(128);
+		tmp.kn = Array(128);
+
+		tmp.RNOR = function() {
+			var hz = tmp.SHR3();
+			var iz = hz & 127;
+			return (Math.abs(hz) < tmp.kn[iz]) ? hz * tmp.wn[iz] : tmp.nfix(hz, iz);
+		}
+
+		tmp.nfix = function(hz, iz) {
+			var r = 3.442619855899;
+			var r1 = 1.0 / r;
+			var x;
+			var y;
+			while(true){
+				x = hz * tmp.wn[iz];
+				if( iz == 0 ){
+					x = (-Math.log(tmp.UNI()) * r1); 
+					y = -Math.log(tmp.UNI());
+					while( y + y < x * x){
+						x = (-Math.log(tmp.UNI()) * r1); 
+						y = -Math.log(tmp.UNI());
+					}
+					return ( hz > 0 ) ? r+x : -r-x;
+				}
+
+				if( tmp.fn[iz] + tmp.UNI() * (tmp.fn[iz-1] - tmp.fn[iz]) < Math.exp(-0.5 * x * x) ){
+					return x;
+				}
+				hz = tmp.SHR3();
+				iz = hz & 127;
+
+				if( Math.abs(hz) < tmp.kn[iz]){
+					return (hz * tmp.wn[iz]);
+				}
+			}
+		}
+
+		tmp.SHR3 = function() {
+			var jz = tmp.jsr;
+			var jzr = tmp.jsr;
+			jzr ^= (jzr << 13);
+			jzr ^= (jzr >>> 17);
+			jzr ^= (jzr << 5);
+			tmp.jsr = jzr;
+			return (jz+jzr) | 0;
+		}
+
+		tmp.UNI = function() {
+			return 0.5 * (1 + tmp.SHR3() / -Math.pow(2,31));
+		}
+
+		// seed generator based on current time
+		tmp.zigset = function() {
+			tmp.jsr ^= new Date().getTime();
+
+			var m1 = 2147483648.0;
+			var dn = 3.442619855899;
+			var tn = dn;
+			var vn = 9.91256303526217e-3;
+
+			var q = vn / Math.exp(-0.5 * dn * dn);
+			tmp.kn[0] = Math.floor((dn/q)*m1);
+			tmp.kn[1] = 0;
+
+			tmp.wn[0] = q / m1;
+			tmp.wn[127] = dn / m1;
+
+			tmp.fn[0] = 1.0;
+			tmp.fn[127] = Math.exp(-0.5 * dn * dn);
+
+			for(var i = 126; i >= 1; i--){
+				dn = Math.sqrt(-2.0 * Math.log( vn / dn + Math.exp( -0.5 * dn * dn)));
+				tmp.kn[i+1] = Math.floor((dn/tn)*m1);
+				tn = dn;
+				tmp.fn[i] = Math.exp(-0.5 * dn * dn);
+				tmp.wn[i] = dn / m1;
+			}
+		}
+		tmp.zigset();
+	}
+
+	//Returns the next gaussian distributed random number
+	return tmp.RNOR();
+}, true, false);
