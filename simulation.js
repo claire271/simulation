@@ -379,16 +379,6 @@ addFunction("graph", function(args, tmp, ui) {
 			var k1 = Math.round((ins.t - noffset) / ins.dt);     //New index of the update line
 
 			for(var j = 0;j < tmp.graphs.length;j++) {
-				/*
-				//Removing old lines
-				for(var i = 0;i < tmp.graphs[j].length;i++) {
-					tmp.graphs[j][i].remove();
-				}
-				tmp.graphs[j] = [];
-				tmp.values[j] = [];
-				*/
-
-				//Adding new lines
 				//The timespan has increased
 				if(l_count > tmp.graphs[j].length) {
 					for(var i = 0;i < tmp.graphs[j].length;i++) {
