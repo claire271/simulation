@@ -340,9 +340,15 @@ addFunction("graph", function(args, tmp, ui) {
 		};
 		tmp.rtlabels(tmp);
 
+		tmp.graphs = []; //Graph [line]s
+		tmp.values = []; //Values
+		for(var i = 0;i < tmp.vcount;i++) {
+			tmp.graphs[i] = [];
+			tmp.values[i] = [];
+		}
 		tmp.tlines = []; //(Time) lines
 		//(Regenerate Time) lines
-		tmp.rtlines = function(tmp) {
+		tmp.rtlines = function(tmp,args) {
 			//Removing old lines
 			for(var i = 0;i < tmp.tlines.length;i++) {
 				tmp.tlines[i].remove();
@@ -360,8 +366,95 @@ addFunction("graph", function(args, tmp, ui) {
 					.attr('stroke-width', 1)
 					.attr('stroke', 'gray');
 			}
+
+			//Also handle changing the number of segments in each plot
+			var noffset = tmp.toffset;
+			while(ins.t - noffset >= tmp.config.t_width) {
+				noffset += tmp.config.t_width;
+			}
+			var l_count = Math.round(tmp.config.t_width / ins.dt);
+			var l_old = tmp.graphs[0].length;
+
+			var i1 = Math.round((ins.t - tmp.toffset) / ins.dt); //Old index of the update line
+			var k1 = Math.round((ins.t - noffset) / ins.dt);     //New index of the update line
+
+			for(var j = 0;j < tmp.graphs.length;j++) {
+				/*
+				//Removing old lines
+				for(var i = 0;i < tmp.graphs[j].length;i++) {
+					tmp.graphs[j][i].remove();
+				}
+				tmp.graphs[j] = [];
+				tmp.values[j] = [];
+				*/
+
+				//Adding new lines
+				//The timespan has increased
+				if(l_count > tmp.graphs[j].length) {
+					for(var i = 0;i < tmp.graphs[j].length;i++) {
+						tmp.graphs[j][i]
+							.attr('x1', tmp.width * i/l_count)
+							.attr('x2', tmp.width * (i + 1)/l_count);
+					}
+					for(var i = tmp.graphs[j].length;i < l_count;i++) {
+						tmp.graphs[j][i] = tmp.ggraphs.append('line')
+							.attr('x1', tmp.width * i/l_count)
+							.attr('y1', 0)
+							.attr('x2', tmp.width * (i + 1)/l_count)
+							.attr('y2', 0)
+							.attr('stroke-width', 1)
+							.attr('display', 'none')
+							.attr('stroke', tmp.config.colors[j]);
+						tmp.values[j][i] = 0;
+					}
+
+					//Shift things after the line over
+					var diff = l_count - l_old;
+					console.log(l_old);
+					for(var i = l_old - 1;i >= k1;i--) {
+						var line_old = tmp.graphs[j][i];
+						tmp.graphs[j][i + diff]
+							.attr('y1',line_old.attr('y1'))
+							.attr('y2',line_old.attr('y2'))
+							.attr('display', line_old.attr('display'));
+						line_old.attr('display', 'none');
+						tmp.values[j][i + diff] = tmp.values[j][i];
+					}
+				}
+				//The timespan has decreased
+				else if(l_count < tmp.graphs[j].length) {
+					for(var i = 0;i < l_count;i++) {
+						tmp.graphs[j][i]
+							.attr('x1', tmp.width * i/l_count)
+							.attr('x2', tmp.width * (i + 1)/l_count);
+					}
+					for(var i = l_count - 1;i >= 0;i--) {
+						var index_old = (i1 - i + l_old) % l_old;
+						var index_new = (k1 - i + l_count) % l_count;
+						var line_old = tmp.graphs[j][index_old];
+						tmp.graphs[j][index_new]
+							.attr('y1', line_old.attr('y1'))
+							.attr('y2', line_old.attr('y2'))
+							.attr('display', line_old.attr('display'));
+						tmp.values[j][index_new] = tmp.values[j][index_old];
+					}
+
+					for(var i = l_count;i < tmp.graphs[j].length;i++) {
+						tmp.graphs[j][i].remove();
+					}
+					tmp.graphs[j].length = l_count;
+					tmp.values[j].length = l_count;
+				}
+			}
 		};
-		tmp.rtlines(tmp);
+		tmp.rtlines(tmp,args);
+		//Initialize first segment on first run
+		var l_count = Math.round(tmp.config.t_width / ins.dt);
+		for(var j = 0;j < tmp.graphs.length;j++) {
+			var ypos = tmp.height * (1 - (args[3][j] - tmp.config.mins[j]) / (tmp.config.maxs[j] - tmp.config.mins[j]))
+			tmp.graphs[j][tmp.graphs[j].length - 1]
+				.attr('y1', ypos);
+		}
 
 		tmp.vlabels = []; //(Values) labels
 		//(Regenerate Values) labels
@@ -415,6 +508,16 @@ addFunction("graph", function(args, tmp, ui) {
 						.attr('y2', tmp.height * i/v_count)
 						.attr('stroke-width', 1)
 						.attr('stroke', 'gray');
+				}
+			}
+
+			//Scale graphs as well
+			for(var j = 0;j < tmp.graphs.length;j++) {
+				for(var i = 0;i < tmp.graphs[j].length;i++) {
+					var ypos = tmp.height * (1 - (tmp.values[j][i] - tmp.config.mins[j]) / (tmp.config.maxs[j] - tmp.config.mins[j]))
+					var i2 = (i - 1 + tmp.graphs[j].length) % tmp.graphs[j].length;
+					tmp.graphs[j][i].attr('y1',ypos);
+					tmp.graphs[j][i2].attr('y2',ypos);
 				}
 			}
 		};
@@ -473,7 +576,7 @@ addFunction("graph", function(args, tmp, ui) {
 
 	//Modify time lines and labels if stuff has changed
 	if(changed.changed.t_width || changed.changed.t_spacing) {
-		tmp.rtlines(tmp);
+		tmp.rtlines(tmp,args);
 		tmp.rtlabels(tmp);
 	}
 
@@ -494,6 +597,17 @@ addFunction("graph", function(args, tmp, ui) {
 	var upos = tmp.width * (ins.t - tmp.toffset) / args[2].t_width;
 	tmp.uline.attr('x1', upos).attr('x2', upos);
 
-
-
+	//Update the lines that need to be updated
+	var i1 = Math.round((ins.t - tmp.toffset) / ins.dt);
+	var i2 = (i1 - 1 + tmp.graphs[0].length) % tmp.graphs[0].length;
+	for(var j = 0;j < tmp.graphs.length;j++) {
+		tmp.values[j][i1] = args[3][j];
+		var ypos = tmp.height * (1 - (args[3][j] - tmp.config.mins[j]) / (tmp.config.maxs[j] - tmp.config.mins[j]))
+		tmp.graphs[j][i1]
+			.attr('y1', ypos)
+			.attr('display', 'none');
+		tmp.graphs[j][i2]
+			.attr('y2', ypos)
+			.attr('display', 'inline');
+	}
 }, true, true);
