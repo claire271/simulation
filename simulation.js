@@ -214,6 +214,14 @@ addFunction("integral", function(args, tmp) {
 		return tmp.acc;
 	}
 }, true, false);
+addFunction("derivative", function(args, tmp) {
+	if(ins.init) {
+		tmp.old = args[0];
+	}
+	var slope = (args[0] - tmp.old) / ins.dt;
+	tmp.old = args[0];
+	return slope;
+}, true, false)
 addFunction("number_output", function(args, tmp, ui) {
 	if(ins.init) {
 		ui.appendChild(document.createTextNode(args[1]));
