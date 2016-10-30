@@ -202,9 +202,13 @@ function addFunction(name, func, use_tmp, use_ui) {
 		return func(arguments, tmp, ui);
 	}
 }
+
+//Usage: log(text)
 fns.log = function(text) {
 	log.value += text + '\n';
 }
+
+//Usage: integral(value)
 addFunction("integral", function(args, tmp) {
 	if(ins.init) {
 		tmp.acc = 0;
@@ -215,6 +219,8 @@ addFunction("integral", function(args, tmp) {
 		return tmp.acc;
 	}
 }, true, false);
+
+//Usage: derivative(value)
 addFunction("derivative", function(args, tmp) {
 	if(ins.init) {
 		tmp.old = args[0];
@@ -223,6 +229,9 @@ addFunction("derivative", function(args, tmp) {
 	tmp.old = args[0];
 	return slope;
 }, true, false)
+
+//Usage: number_input(position, label, value)
+//position = 'top: <dist from top>px; left: <dist from left>px;'
 addFunction("number_output", function(args, tmp, ui) {
 	if(ins.init) {
 		ui.appendChild(document.createTextNode(args[1]));
@@ -234,6 +243,9 @@ addFunction("number_output", function(args, tmp, ui) {
 	}
 	tmp.input.value = args[2];
 }, true, true);
+
+//Usage: number_input(position, label, initial_value)
+//position = 'top: <dist from top>px; left: <dist from left>px;'
 addFunction("number_input", function(args, tmp, ui) {
 	if(ins.init) {
 		ui.appendChild(document.createTextNode(args[1]));
@@ -252,6 +264,13 @@ addFunction("number_input", function(args, tmp, ui) {
 	}
 	return tmp.val;
 }, true, true);
+
+//Usage: graph(position, label, limits, inputs)
+//position = 'top: <dist from top>px; left: <dist from left>px; width: <width>px; height: <height>px;'
+//limits = {t_width: <time to show>, t_spacing: <time between vertical lines>,
+//          maxs:[<a max>, <b max>, ...], mins:[<a min>, <b min>, ...],
+//          spacings: [<a spacing>, <b spacing>, ...], colors: [<a color>, <b color>, ...]}
+//inputs = [<a value>, <b value>, ...]
 addFunction("graph", function(args, tmp, ui) {
 	const vlwidth = 50;
 	if(ins.init) {
@@ -612,6 +631,9 @@ addFunction("graph", function(args, tmp, ui) {
 }, true, true);
 
 //Taken from https://github.com/jamesbloomer/node-ziggurat
+//Usage: nrandom()
+//Returns a stream of random values with a gaussian distribution
+//mean = 0, variance = 1
 addFunction("nrandom", function(args, tmp) {
 	if(ins.init) {
 		tmp.jsr = 123456789;
@@ -702,3 +724,9 @@ addFunction("nrandom", function(args, tmp) {
 	//Returns the next gaussian distributed random number
 	return tmp.RNOR();
 }, true, false);
+
+//Usage: friction(input, ks, kk)
+//Simulates dynamic and static friction
+addFunction("friction", function(args, tmp) {
+	return Math.sign(args[0]) * (args[1] + args[2] * Math.abs(args[0]));
+}, false, false);
