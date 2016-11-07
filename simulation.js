@@ -736,3 +736,38 @@ addFunction("nrandom", function(args, tmp) {
 addFunction("friction", function(args, tmp) {
 	return Math.sign(args[0]) * (args[1] + args[2] * Math.abs(args[0]));
 }, false, false);
+
+//Usage: limit(input, min, max)
+addFunction("limit", function(args, tmp) {
+	//Check minimum (optional)
+	if(args[1] !== undefined && args[0] < args[1]) return args[1];
+	//Check maximum (optional)
+	if(args[2] !== undefined && args[0] > args[2]) return args[2];
+	//Within limits
+	return args[0];
+}, false, false);
+
+//Usage: pid(sp, pv, kp, ki, kd, lims)
+//lims = {l, u, pl, pu, il, iu, dl, du}
+addFunction("pid", function(args, tmp) {
+	var limits = args[5] || {};
+	var err = args[0] - args[1];
+
+	var p = Sim.limit(args[2] * err, limits.pl, limits.pu);
+	var i = Sim.integral(args[3] * err, limits.il, limits.iu);
+	var d = Sim.limit(args[4] * Sim.derivative(args[1]), limits.dl, limits.du);
+
+	return Sim.limit(p + i + d, limits.l, limits.u);
+}, false, false);
+
+//Usage: pidv(sp, pv, kp, kd, lims)
+//lims = {l, u, pl, pu, dl, du}
+addFunction("pidv", function(args, tmp) {
+	var limits = args[4] || {};
+	var err = args[0] - args[1];
+
+	var p = Sim.integral(args[2] * err, limits.pl, limits.pu);
+	var d = Sim.limit(args[3] * err, limits.dl, limits.du);
+
+	return Sim.limit(p + d, limits.l, limits.u);
+}, false, false);
