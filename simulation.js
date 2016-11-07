@@ -216,6 +216,12 @@ addFunction("integral", function(args, tmp) {
 	}
 	else {
 		tmp.acc += args[0] * ins.dt;
+		console.log(tmp.acc);
+		//Check minimum (optional)
+		if(args[1] !== undefined && tmp.acc < args[1]) tmp.acc = args[1];
+		//Check maximum (optional)
+		if(args[2] !== undefined && tmp.acc > args[2]) tmp.acc = args[2];
+		console.log(tmp.acc);
 		return tmp.acc;
 	}
 }, true, false);
