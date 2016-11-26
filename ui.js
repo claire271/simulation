@@ -23,6 +23,8 @@ var timerID;
 
 //The main UI panel for the user simulation
 var panel = document.getElementById('panel');
+//The main div for large data input output
+var data_div = document.getElementById('data');
 //The main debug log for the user simulation
 var log = document.getElementById('out_textarea');
 //Buttons
@@ -40,6 +42,8 @@ var save_button = document.getElementById('save_button');
 var filename_field = document.getElementById('filename_textfield');
 var open_button = document.getElementById('open_button');
 var file_selector = document.getElementById('file_selector');
+//Data inputing
+var add_data_button = document.getElementById('add_data_button');
 
 //Set up button actions
 start_button.onclick = start_pressed;
@@ -308,4 +312,101 @@ open_button.onclick = function() {
 	}
 	reader.readAsText(file_selector.files[0]);
 	filename_field.value = file_selector.files[0].name;
+}
+
+//Setting up large data inputs
+add_data_button.onclick = add_datafield;
+
+function add_datafield() {
+	var data = {};
+
+	//The name of the data that the user script can access
+	data.name_field = document.createElement('input');
+	data.name_field.type = 'text';
+
+	//Change what type of data this can be
+	data.type_field = document.createElement('select');
+	data.type_field.appendChild(document.createElement('option'));
+	data.type_field.lastElementChild.value = 'shorttext';
+	data.type_field.lastElementChild.innerHTML = 'Short Text';
+	data.type_field.lastElementChild.selected = true;
+	data.type_field.appendChild(document.createElement('option'));
+	data.type_field.lastElementChild.value = 'number';
+	data.type_field.lastElementChild.innerHTML = 'Number';
+	data.type_field.appendChild(document.createElement('option'));
+	data.type_field.lastElementChild.value = 'longtext';
+	data.type_field.lastElementChild.innerHTML = 'Long Text';
+
+	//Allow the user to remove data fields
+	data.remove_button = document.createElement('button');
+	data.remove_button.type = 'text';
+	data.remove_button.classList.add('btn', 'btn-default');
+	data.remove_button.innerHTML = '-';
+
+	//Initial creation of an input element for the data
+	data.data_field = document.createElement('input');
+	data.data_field.type = 'text';
+
+	//Build the div
+	data.div = document.createElement('div');
+	data.div.appendChild(data.name_field);
+	data.div.appendChild(data.type_field);
+	data.div.appendChild(data.remove_button);
+	data.div.appendChild(document.createElement('br'));
+	data.div.appendChild(data.data_field);
+
+	//Data type switching code
+	data.type_field.onchange = function() {
+		var data_field;
+		switch(data.type_field.value) {
+		case 'number':
+			data_field = document.createElement('input');
+			data_field.type = 'number';
+			data_field.value = data.data_field.value;
+			break;
+		case 'longtext':
+			data_field = document.createElement('textarea');
+			data_field.rows = 20;
+			data_field.cols = 80;
+			data_field.style.fontFamily = 'Liberation Mono, monospace';
+			data_field.value = data.data_field.value;
+			break;
+		case 'shorttext':
+		default:
+			data_field = document.createElement('input');
+			data_field.type = 'text';
+			data_field.value = data.data_field.value;
+			break;
+		}
+		data.div.replaceChild(data_field, data.data_field);
+		data.data_field = data_field;
+	}
+
+	//Remove data code
+	data.remove_button.onclick = function() {
+		data_div.removeChild(data.div);
+		datas.splice(datas.indexOf(data), 1);
+	}
+
+	data_div.insertBefore(data.div, data_div.lastElementChild);
+	datas.push(data);
+}
+
+function write_datafield(name, data) {
+	for(var i = 0;i < datas.length;i++) {
+		//We have a match
+		if(datas[i].name_field.value == name) {
+			datas[i].data_field.value = data;
+			return;
+		}
+	}
+}
+
+function read_datafield(name) {
+	for(var i = 0;i < datas.length;i++) {
+		//We have a match
+		if(datas[i].name_field.value == name) {
+			return datas[i].data_field.value;
+		}
+	}
 }

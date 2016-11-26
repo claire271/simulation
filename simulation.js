@@ -17,12 +17,14 @@ var user_step;
 /////////////////////////////////////////////
 // Variables used by the simulation
 
+//External data variables
+var datas = [];
 //Previous simulation values
 var ins;
 //New simulation values
 var outs;
 //Functions specifically for the simulator
-var fns;
+var Sim;
 
 /////////////////////////////////////////////
 //String hash expander function
@@ -141,7 +143,7 @@ function sim_init(timestep, init_func, step_func) {
 	//var init_code = init_area.value;
 	//eval(init_code);
 	try {
-		user_init(ins, outs, fns);
+		user_init(ins, outs, Sim);
 	}
 	catch(err) {
 		alert("Error in init code. See log for details");
@@ -166,7 +168,7 @@ function sim_step(timestep, initialize) {
 	//var step_code = step_area.value;
 	//eval(step_code);
 	try {
-		user_step(ins, outs, fns);
+		user_step(ins, outs, Sim);
 	}
 	catch(err) {
 		alert("Error in step code. See log for details");
@@ -183,10 +185,9 @@ function sim_step(timestep, initialize) {
 
 /////////////////////////////////////////////
 //Simulation functions
-fns = {};
-var Sim = fns;
+Sim = {};
 function addFunction(name, func, use_tmp, use_ui) {
-	fns[name] = function() {
+	Sim[name] = function() {
 		var tmp;
 		var ui;
 		if(ins.init) {
@@ -204,7 +205,7 @@ function addFunction(name, func, use_tmp, use_ui) {
 }
 
 //Usage: log(text)
-fns.log = function(text) {
+Sim.log = function(text) {
 	log.value += text + '\n';
 }
 
@@ -733,12 +734,12 @@ addFunction("nrandom", function(args, tmp) {
 
 //Usage: friction(input, ks, kk)
 //Simulates dynamic and static friction
-addFunction("friction", function(args, tmp) {
+addFunction("friction", function(args) {
 	return Math.sign(args[0]) * (args[1] + args[2] * Math.abs(args[0]));
 }, false, false);
 
 //Usage: limit(input, min, max)
-addFunction("limit", function(args, tmp) {
+addFunction("limit", function(args) {
 	//Check minimum (optional)
 	if(args[1] !== undefined && args[0] < args[1]) return args[1];
 	//Check maximum (optional)
@@ -749,7 +750,7 @@ addFunction("limit", function(args, tmp) {
 
 //Usage: pid(sp, pv, kp, ki, kd, lims)
 //lims = {l, u, pl, pu, il, iu, dl, du}
-addFunction("pid", function(args, tmp) {
+addFunction("pid", function(args) {
 	var limits = args[5] || {};
 	var err = args[0] - args[1];
 
@@ -762,7 +763,7 @@ addFunction("pid", function(args, tmp) {
 
 //Usage: pidv(sp, pv, kp, kd, lims)
 //lims = {l, u, pl, pu, dl, du}
-addFunction("pidv", function(args, tmp) {
+addFunction("pidv", function(args) {
 	var limits = args[4] || {};
 	var err = args[0] - args[1];
 
@@ -770,4 +771,12 @@ addFunction("pidv", function(args, tmp) {
 	var d = Sim.limit(args[3] * err, limits.dl, limits.du);
 
 	return Sim.limit(p + d, limits.l, limits.u);
+}, false, false);
+
+//Usage: readData(name)
+addFunction("readData", function(args) {
+}, false, false);
+
+//Usage: writeData(name, data)
+addFunction("writeData", function(args) {
 }, false, false);
