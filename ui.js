@@ -266,13 +266,24 @@ function ui_step() {
 
 //Setting up file stuff
 save_button.onclick = function() {
-	var blob = new Blob(["////////////////////\n//Configuration\n////////////////////\n",
-						 "timestep ", timestep_field.value,
-						 "\ncodestep ", codestep_field.value,
-						 "\n////////////////////\n//Init Code\n////////////////////\n",
-						 init_area.value,
-						 "\n////////////////////\n//Step Code\n////////////////////\n",
-						 step_area.value], {type: "text/plain;charset=utf-8"});
+	//Build the file up line by line
+	var strings = [];
+	strings.push("////////////////////\n//Configuration\n////////////////////\n");
+	strings.push("timestep ", timestep_field.value, "\n");
+	strings.push("codestep ", codestep_field.value, "\n");
+	strings.push("////////////////////\n//Data\n////////////////////\n");
+	for(var i = 0;i < datas.length;i++) {
+		strings.push("//////////////////\n");
+		strings.push(datas[i].name_field.value, "\n");
+		strings.push(datas[i].type_field.value, "\n");
+		strings.push(datas[i].data_field.value, "\n");
+	}
+	strings.push("////////////////////\n//Init Code\n////////////////////\n");
+	strings.push(init_area.value, "\n");
+	strings.push("////////////////////\n//Step Code\n////////////////////\n");
+	strings.push(step_area.value, "\n");
+
+	var blob = new Blob(strings, {type: "text/plain;charset=utf-8"});
 	saveAs(blob, filename_field.value);
 }
 open_button.onclick = function() {
@@ -283,6 +294,7 @@ open_button.onclick = function() {
 		var mode = '';
 		var init_text = '';
 		var step_text = '';
+		while(datas.length > 0) datas[0].remove_button.onclick();
 		for(var i = 0;i < lines.length;i++) {
 			//Switching between the modes
 			if(i < lines.length - 2 &&
@@ -296,6 +308,19 @@ open_button.onclick = function() {
 				var parts = lines[i].split(' ');
 				window[parts[0] + '_field'].value = parts.slice(1).join(' ');
 			}
+			else if(mode == '//Data') {
+				if(lines[i] == '//////////////////') {
+					add_datafield();
+					datas[datas.length - 1].name_field.value = lines[i + 1];
+					datas[datas.length - 1].type_field.value = lines[i + 2];
+					datas[datas.length - 1].type_field.onchange();
+					datas[datas.length - 1].data_field.value = lines[i + 3];
+					i += 3;
+				}
+				else {
+					datas[datas.length - 1].data_field.value += "\n" + lines[i];
+				}
+			}
 			else if(mode == '//Init Code') {
 				init_text += lines[i] + '\n';
 			}
@@ -304,6 +329,7 @@ open_button.onclick = function() {
 			}
 		}
 
+		//Strip whitespace if there is any at the end of the code
 		init_area.value = init_text.replace(/\s$/, '');
 		step_area.value = step_text.replace(/\s$/, '');
 	}
