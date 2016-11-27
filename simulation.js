@@ -775,8 +775,20 @@ addFunction("pidv", function(args) {
 
 //Usage: readData(name)
 addFunction("readData", function(args) {
+	return read_datafield(args[0]);
 }, false, false);
 
 //Usage: writeData(name, data)
 addFunction("writeData", function(args) {
+	write_datafield(args[0], args[1]);
+}, false, false);
+
+//Usage: pause()
+addFunction("pause", function(args) {
+	setState(States.paused);
+}, false, false);
+
+//Usage: stop()
+addFunction("stop", function(args) {
+	setState(States.stopped);
 }, false, false);
