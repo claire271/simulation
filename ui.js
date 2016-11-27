@@ -37,6 +37,7 @@ var codestep_field = document.getElementById('codestep_textfield');
 //Input fields
 var init_area = document.getElementById('init_textarea');
 var step_area = document.getElementById('step_textarea');
+var end_area = document.getElementById('end_textarea');
 //File saving and reading
 var save_button = document.getElementById('save_button');
 var filename_field = document.getElementById('filename_textfield');
@@ -115,6 +116,7 @@ function setInputDisabled(disabled) {
 	codestep_field.disabled = disabled;
 	init_area.disabled = disabled;
 	step_area.disabled = disabled;
+	end_area.disabled = disabled;
 }
 
 //This function sets the main state of the simulator
@@ -140,6 +142,7 @@ function setState(new_state) {
 		case States.stopped:
 			state = States.stopped;
 			setInputDisabled(false);
+			ui_end();
 			break;
 		case States.running:
 			state = States.running;
@@ -152,7 +155,7 @@ function setState(new_state) {
 		case States.stopped:
 			state = States.stopped;
 			setInputDisabled(false);
-			ui_pause();
+			ui_pause() && ui_end();
 			break;
 		case States.paused:
 			state = States.paused;
@@ -212,8 +215,21 @@ function ui_init() {
 		setState(States.stopped);
 		return;
 	}
+	try {
+		var end_function = eval("(function(ins, outs, fns) {" +
+								expand_hash(end_area.value) +
+								"})");
+	}
+	catch(err) {
+		alert("Error in end code. See log for details");
+		log.value = "Error in end code.\n";
+		log.value += err + "\n";
+		log.value += "Line:Column - " + err.stack.split("\n")[0].split("eval:")[1];
+		setState(States.stopped);
+		return;
+	}
 
-	sim_init(+timestep / 1000, init_function, step_function);
+	sim_init(+timestep / 1000, init_function, step_function, end_function);
 
 	return true;
 }
@@ -260,6 +276,29 @@ function ui_step() {
 	console.log("STEP");
 
 	sim_step(+timestep / 1000, false);
+
+	return true;
+}
+
+function ui_end() {
+	var timestep = timestep_field.value;
+
+	//Bail early if we have any errors
+	if(isNaN(timestep) || !timestep) {
+		alert("Simulation Timestep is not a number");
+		setState(States.paused);
+		return false;
+	}
+	if(+timestep == 0) {
+		alert("Simulation Timestep cannot be zero");
+		setState(States.paused);
+		return false;
+	}
+
+	//Do actual ending stuff now
+	console.log("END");
+
+	sim_end(+timestep / 1000);
 
 	return true;
 }

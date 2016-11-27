@@ -13,6 +13,8 @@ var uindex;
 var user_init;
 //The actual user simulated step
 var user_step;
+//The actual user simulated end
+var user_end;
 
 /////////////////////////////////////////////
 // Variables used by the simulation
@@ -118,7 +120,7 @@ function hash_is_part(curr) {
 /////////////////////////////////////////////
 //Step and init Functions
 
-function sim_init(timestep, init_func, step_func) {
+function sim_init(timestep, init_func, step_func, end_func) {
 	ins = {};
 	outs = {};
 	tmps = [];
@@ -134,6 +136,7 @@ function sim_init(timestep, init_func, step_func) {
 	//Set user functions
 	user_init = init_func;
 	user_step = step_func;
+	user_end = end_func;
 
 	//Need to clear panel and log too
 	panel.innerHTML = '';
@@ -183,6 +186,25 @@ function sim_step(timestep, initialize) {
 	for(var k in outs) ins[k] = outs[k];
 }
 
+function sim_end(timestep) {
+	ins.dt = timestep;
+	ins.init = true;
+	tindex = 0;
+	uindex = 0;
+
+	try {
+		user_end(ins, outs, Sim);
+	}
+	catch(err) {
+		alert("Error in end code. See log for details");
+		log.value = "Error in end code.\n";
+		log.value += err + "\n";
+		log.value += "Line:Column - " + err.stack.split("\n")[0].split("eval:")[1];
+		setState(States.stopped);
+		return;
+	}
+}
+
 /////////////////////////////////////////////
 //Simulation functions
 Sim = {};
@@ -217,12 +239,10 @@ addFunction("integral", function(args, tmp) {
 	}
 	else {
 		tmp.acc += args[0] * ins.dt;
-		console.log(tmp.acc);
 		//Check minimum (optional)
 		if(args[1] !== undefined && tmp.acc < args[1]) tmp.acc = args[1];
 		//Check maximum (optional)
 		if(args[2] !== undefined && tmp.acc > args[2]) tmp.acc = args[2];
-		console.log(tmp.acc);
 		return tmp.acc;
 	}
 }, true, false);
