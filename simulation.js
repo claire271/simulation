@@ -193,7 +193,9 @@ function sim_end(timestep) {
 	uindex = 0;
 
 	try {
-		user_end(ins, outs, Sim);
+		if(user_end) {
+			user_end(ins, outs, Sim);
+		}
 	}
 	catch(err) {
 		alert("Error in end code. See log for details");
