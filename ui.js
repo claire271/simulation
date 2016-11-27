@@ -321,6 +321,8 @@ save_button.onclick = function() {
 	strings.push(init_area.value, "\n");
 	strings.push("////////////////////\n//Step Code\n////////////////////\n");
 	strings.push(step_area.value, "\n");
+	strings.push("////////////////////\n//End Code\n////////////////////\n");
+	strings.push(end_area.value, "\n");
 
 	var blob = new Blob(strings, {type: "text/plain;charset=utf-8"});
 	saveAs(blob, filename_field.value);
@@ -333,6 +335,7 @@ open_button.onclick = function() {
 		var mode = '';
 		var init_text = '';
 		var step_text = '';
+		var end_text = '';
 		while(datas.length > 0) datas[0].remove_button.onclick();
 		for(var i = 0;i < lines.length;i++) {
 			//Switching between the modes
@@ -366,11 +369,15 @@ open_button.onclick = function() {
 			else if(mode == '//Step Code') {
 				step_text += lines[i] + '\n';
 			}
+			else if(mode == '//End Code') {
+				end_text += lines[i] + '\n';
+			}
 		}
 
 		//Strip whitespace if there is any at the end of the code
 		init_area.value = init_text.replace(/\s$/, '');
 		step_area.value = step_text.replace(/\s$/, '');
+		end_area.value = end_text.replace(/\s$/, '');
 	}
 	reader.onerror = function () {
 		alert('Error reading file');
