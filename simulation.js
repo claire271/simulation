@@ -815,8 +815,8 @@ addFunction("stop", function(args) {
 	setState(States.stopped);
 }, false, false);
 
-//Usage: csvread()
-addFunction("csvread", function(args) {
+//Usage: csvRead(stringData)
+addFunction("csvRead", function(args) {
 	var output = [];
 	var lines = args[0].split('\n');
 	for(var i = 0;i < lines.length;i++) {
