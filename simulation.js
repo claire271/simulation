@@ -814,3 +814,20 @@ addFunction("pause", function(args) {
 addFunction("stop", function(args) {
 	setState(States.stopped);
 }, false, false);
+
+//Usage: csvread()
+addFunction("csvread", function(args) {
+	var output = [];
+	var lines = args[0].split('\n');
+	for(var i = 0;i < lines.length;i++) {
+		var parts = lines[i].split(',');
+		for(var j = 0;j < parts.length;j++) {
+			parts[j] = parts[j].trim();
+			if(!isNaN(parts[j])) {
+				parts[j] = +(parts[j]);
+			}
+		}
+		output.push(parts);
+	}
+	return output;
+}, false, false);
