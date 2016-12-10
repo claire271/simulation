@@ -29,7 +29,7 @@ number
 #in = 0;
 //Other scaling parameters
 #km = 60;
-#kr = 0;
+#kr = 0.5;
 //Friction parameters
 #ks = .1;
 #kk = .7;
@@ -59,18 +59,19 @@ number
 #ki = Sim.number_input('top:0px;left:600px','ki', #ki);
 #kd = Sim.number_input('top:0px;left:800px','kd', #kd);
 
-#a = (#in * #km - Sim.friction(#v, #ks, #kk) + Sim.nrandom() * #kr)/#m;
+#a = (#in * #km + Sim.friction(#v, #ks, #kk) + Sim.nrandom() * #kr)/#m;
 #v = Sim.integral(#a);
 #pv = #v + Sim.nrandom() * #ksr;
 
-//#in = Sim.limit(Sim.pid(#sp, #pv, #kp, #ki, #kd, {il: -.1, iu: .1}) + #kf * #sp, 0, 1);
-#in = Sim.limit(Sim.pidv(#sp, #pv, #kp, #kd, {pl: -.1, pu: .1}) + #kf * #sp, 0, 1);
-
+//#in = Sim.pid(#sp, #pv, #kp, #ki, #kd, #kf * #sp, {l: 0, u: 1, il: -.1, iu: .1});
+#in = Sim.pidv(#sp, #pv, #kp, #kd, #kf * #sp, {l: 0, u: 1, pl: -.1, pu: .1});
 
 Sim.graph('top:50px;left:0px;width:1000px;height:500px','Graph',
 {t_width: 10, t_spacing: 1, maxs: [1, 80, 80], mins: [0, 0, 0], spacings: [.25, 10, 10], colors: ['red', 'blue', 'green']},[#in, #v, #sp]);
 
-
+Sim.label('top:550px;left:0px','Red: PID output');
+Sim.label('top:550px;left:150px','Green: Set Point');
+Sim.label('top:550px;left:300px','Blue: Process Variable');
 ////////////////////
 //End Code
 ////////////////////
@@ -79,3 +80,6 @@ Sim.writeData('kf', #kf);
 Sim.writeData('kp', #kp);
 Sim.writeData('ki', #ki);
 Sim.writeData('kd', #kd);
+
+
+
