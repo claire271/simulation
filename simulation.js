@@ -757,7 +757,7 @@ addFunction("nrandom", function(args, tmp) {
 //Usage: friction(input, ks, kk)
 //Simulates dynamic and static friction
 addFunction("friction", function(args) {
-	return Math.sign(args[0]) * (args[1] + args[2] * Math.abs(args[0]));
+	return -Math.sign(args[0]) * (args[1] + args[2] * Math.abs(args[0]));
 }, false, false);
 
 //Usage: limit(input, min, max)
@@ -831,3 +831,10 @@ addFunction("csvRead", function(args) {
 	}
 	return output;
 }, false, false);
+
+//Usage: label(position, text)
+addFunction("label", function(args, tmp, ui) {
+	if(ins.init) {
+		ui.appendChild(document.createTextNode(args[1]));
+	}
+}, false, true);
