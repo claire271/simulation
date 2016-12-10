@@ -770,29 +770,31 @@ addFunction("limit", function(args) {
 	return args[0];
 }, false, false);
 
-//Usage: pid(sp, pv, kp, ki, kd, lims)
-//lims = {l, u, pl, pu, il, iu, dl, du}
+//Usage: pid(sp, pv, kp, ki, kd, ff, lims)
+//lims = {l, u, pl, pu, il, iu, dl, du, fl, fu}
 addFunction("pid", function(args) {
-	var limits = args[5] || {};
+	var limits = args[6] || {};
 	var err = args[0] - args[1];
 
 	var p = Sim.limit(args[2] * err, limits.pl, limits.pu);
 	var i = Sim.integral(args[3] * err, limits.il, limits.iu);
 	var d = Sim.limit(args[4] * Sim.derivative(args[1]), limits.dl, limits.du);
+	var f = Sim.limit(args[5], limits.fl, limits.fu);
 
-	return Sim.limit(p + i + d, limits.l, limits.u);
+	return Sim.limit(p + i + d + f, limits.l, limits.u);
 }, false, false);
 
-//Usage: pidv(sp, pv, kp, kd, lims)
+//Usage: pidv(sp, pv, kp, kd, ff, lims)
 //lims = {l, u, pl, pu, dl, du}
 addFunction("pidv", function(args) {
-	var limits = args[4] || {};
+	var limits = args[5] || {};
 	var err = args[0] - args[1];
 
 	var p = Sim.integral(args[2] * err, limits.pl, limits.pu);
 	var d = Sim.limit(args[3] * err, limits.dl, limits.du);
+	var f = Sim.limit(args[4], limits.fl, limits.fu);
 
-	return Sim.limit(p + d, limits.l, limits.u);
+	return Sim.limit(p + d + f, limits.l, limits.u);
 }, false, false);
 
 //Usage: readData(name)

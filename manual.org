@@ -25,17 +25,34 @@ Original Code:
 
 ~#output = #foo + #bar;~
 
-Modified Code:
+Processed Code:
 
 ~outs.output = ins.foo + ins.bar;~
 
 This text substitution is to reduce or eliminate the need to explicitly specify if a simulation variable is an output or input.
 
+An example of the usage is shown below. The meaning is more clearly conveyed.
+
+~#velocity = Sim.integral(#acceleration);~
+
+** Built in variables
+
+*ins.t*: The current time since the beginning of the simulation.
+
+*ins.dt*: The \Delta{}t of the simulation.
+
+** Simulation Flow
+   
+1. The init code is run once when the simulation is started.
+2. The step code is run once for each time step.
+3. All of the /outs/ variables are copied to /ins/ between each time step.
+4. The end code is run once when the simulation is stopped.
+
 * Example Simulation
 
 [[http://tigerhuang.com/simulation/pid-controller.sim][pid-controller.sim]]
 
-This example simulation simulates a fly wheel and controls it with a PIDF loop.
+This example simulation simulates a fly wheel and controls it with a PIDF loop. Simply save the file and upload it to the simulator.
 
 * Detailed Function Documentation
 
@@ -48,7 +65,7 @@ Logs /text/ into the log tab of the simulator.
 ** Sim.integral(value, min, max)
 
 Integrates /value/ over time.
-If min and max are passed in and defined, the output value of the integral will be limited between min and max.
+If /min/ and /max/ are passed in and defined, the output value of the integral will be limited between /min/ and /max/.
 The min and max can be set seperately as well.
 
 *Return*: The current value of the integral.
@@ -57,11 +74,11 @@ The min and max can be set seperately as well.
 
 Finds the derivative of /value/ at each point in time.
 
-*Return*: The derivative of the input
+*Return*: The current derivative of the input
 
 ** Sim.number_output(position, label, value)
     
-Creates a text number output at /position/ with /label/ displaying /value/.
+Creates a text field number output at /position/ with /label/ displaying /value/.
 
 *Position* = 'top: <dist from top>px; left: <dist from left>px;'
 
@@ -69,7 +86,7 @@ Creates a text number output at /position/ with /label/ displaying /value/.
 
 ** Sim.number_input(position, label, initial_value)
 
-Creates a text number input at /position/ with /label/ with /initial_value/.
+Creates a text field number input at /position/ with /label/ with /initial_value/.
 The control is only set to /initial_value/ once at the beginning of the simulation.
 
 *Position* = 'top: <dist from top>px; left: <dist from left>px;'
@@ -122,7 +139,7 @@ Limits /input/ between /min/ and /max/.
 
 *Return*: The /input/ limited between /min/ and /max/.
 
-** Sim.pid(sp, pv, kp, ki, kd, lims)
+** Sim.pid(sp, pv, kp, ki, kd, ff, lims)
     
 Runs a PID loop. All limits are optional and will not be applied if they are not defined in /lims/.
 
@@ -136,7 +153,9 @@ Runs a PID loop. All limits are optional and will not be applied if they are not
 
 *kd*: Derivative gain
 
-*lims* = {l, u, pl, pu, il, iu, dl, du}
+*ff*: User calculated feed forward (not gain!)
+
+*lims* = {l, u, pl, pu, il, iu, dl, du, fl, fu}
 
 /l/: Lower PID output limit
 
@@ -154,9 +173,13 @@ Runs a PID loop. All limits are optional and will not be applied if they are not
 
 /du/: Upper derivative limit
 
+/fl/: Lower feedforward limit
+
+/fu/: Upper feedforward limit
+
 *Return*: The current output of the PID loop.
 
-** Sim.pidv(sp, pv, kp, ki, kd, lims)
+** Sim.pidv(sp, pv, kp, ki, kd, ff, lims)
     
 Runs a velocity PID loop. All limits are optional and will not be applied if they are not defined in /lims/.
 
@@ -168,7 +191,9 @@ Runs a velocity PID loop. All limits are optional and will not be applied if the
 
 *kd*: Derivative gain
 
-*lims* = {l, u, pl, pu, dl, du}
+*ff*: User calculated feed forward (not gain!)
+
+*lims* = {l, u, pl, pu, dl, du, fl, fu}
 
 /l/: Lower PID output limit
 
@@ -181,6 +206,10 @@ Runs a velocity PID loop. All limits are optional and will not be applied if the
 /dl/: Lower derivative limit
 
 /du/: Upper derivative limit
+
+/fl/: Lower feedforward limit
+
+/fu/: Upper feedforward limit
 
 *Return*: The current output of the velocity PID loop.
 
@@ -213,6 +242,14 @@ Stops the simulation.
 Processes /stringData/ as a CSV and splits it into an array of rows. Each row then contains an array of values as the columns.
 
 *Return*: The array of arrays of data.
+
+** Sim.label(position, text)
+
+Creates a label at /position/ with /text/.
+
+*Position* = 'top: <dist from top>px; left: <dist from left>px;'
+
+*Return*: None
 
 * Detailed UI Documentation
    
