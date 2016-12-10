@@ -1,0 +1,292 @@
+#+OPTIONS: ^:nil
+#+TITLE: Step based Javascript Simulator Manual
+
+* Introduction
+   
+This simulator is written in Javascript and uses Euler's method to compute derivatives and integrals.
+There are several other functions to make it convienient to simulate various physical systems.
+
+* Overview
+
+The user language of this simulator is also Javascript. Any simulator specific functions are called by Sim.<function>.
+Any other standard Javascript functions and classes can be used as well.
+
+** Variables
+
+All of the user variables are stored in two objects called /ins/ and /outs/.
+
+/ins/ is the state of the simulator from the previous step.
+
+/outs/ is the state of the simulator as a result of the current step.
+
+A '#' can be prepended in front of any variable name so that /ins/ or /outs/ is automatically prepended depending on if it is assignment or not. An example is shown below.
+
+Original Code:
+
+~#output = #foo + #bar;~
+
+Modified Code:
+
+~outs.output = ins.foo + ins.bar;~
+
+This text substitution is to reduce or eliminate the need to explicitly specify if a simulation variable is an output or input.
+
+* Example Simulation
+
+[[http://tigerhuang.com/simulation/pid-controller.sim][pid-controller.sim]]
+
+This example simulation simulates a fly wheel and controls it with a PIDF loop.
+
+* Detailed Function Documentation
+
+** Sim.log(text)
+
+Logs /text/ into the log tab of the simulator.
+
+*Return*: None
+
+** Sim.integral(value, min, max)
+
+Integrates /value/ over time.
+If min and max are passed in and defined, the output value of the integral will be limited between min and max.
+The min and max can be set seperately as well.
+
+*Return*: The current value of the integral.
+
+** Sim.derivative(value)
+
+Finds the derivative of /value/ at each point in time.
+
+*Return*: The derivative of the input
+
+** Sim.number_output(position, label, value)
+    
+Creates a text number output at /position/ with /label/ displaying /value/.
+
+*Position* = 'top: <dist from top>px; left: <dist from left>px;'
+
+*Return*: None
+
+** Sim.number_input(position, label, initial_value)
+
+Creates a text number input at /position/ with /label/ with /initial_value/.
+The control is only set to /initial_value/ once at the beginning of the simulation.
+
+*Position* = 'top: <dist from top>px; left: <dist from left>px;'
+
+*Return*: The value that is entered into this control.
+
+** Sim.graph(position, label, limits, inputs)
+
+Creates a graph output that has settings that can be dynamically modified. The only parameter that cannot be modified at run time is the number of plots drawn.
+
+*Position* = 'top: <dist from top>px; left: <dist from left>px; width: <width>px; height: <height>px;'
+
+*Limits* = {t_width: <time to show>, t_spacing: <time between vertical lines>,
+            maxs:[<a max>, <b max>, ...], mins:[<a min>, <b min>, ...],
+            spacings: [<a spacing>, <b spacing>, ...], colors: [<a color>, <b color>, ...]}
+
+/t_width/: The amount of time to show on the horizontal axis.
+
+/t_spacing/: The amount of time between each set of time labels.
+
+/maxs/: An array of maximum values for each plot.
+
+/mins/: An array of minimum values for each plot. The length must match /maxs/.
+
+/spacings/: An array of spacings (the amount of units between each set of labels), one for each plot. The length must match /maxs/.
+
+/colors/: An array of colors for each plot. The length must match /maxs/.
+            
+*Inputs* = An array of values to plot. The length must match /Limits.maxs/
+
+*Return*: None
+
+** Sim.nrandom()
+
+*Return*: A stream of numbers (one per call) with a gaussian distribution (mean = 0, variance = 1)
+
+** Sim.friction(input, ks, kk)
+
+Simulates a nonlinear (static + dynamic) friction system.
+
+The static friction (/ks/) is a constant amount that acts in the opposite direction of /input/.
+The dynamic friction (/kk/) is multiplied by /input/ but acts in the opposite direction of /input/.
+
+*Return*: The amount of 'force' exerted by the static and dynamic friction.
+
+** Sim.limit(input, min, max)
+
+Limits /input/ between /min/ and /max/.
+/min/ and /max/ are optional arguments. If nothing is passed in for them or if they are undefined, that limit is not used. The min and max can be set seperately.
+
+*Return*: The /input/ limited between /min/ and /max/.
+
+** Sim.pid(sp, pv, kp, ki, kd, lims)
+    
+Runs a PID loop. All limits are optional and will not be applied if they are not defined in /lims/.
+
+*sp*: Set point
+
+*pv*: Process variable
+
+*kp*: Proportional gain
+
+*ki*: Integral gain
+
+*kd*: Derivative gain
+
+*lims* = {l, u, pl, pu, il, iu, dl, du}
+
+/l/: Lower PID output limit
+
+/u/: Upper PID output limit
+
+/pl/: Lower proportional limit
+
+/pu/: Upper proportional limit
+
+/il/: Lower integral limit
+
+/iu/: Upper integral limit
+
+/dl/: Lower derivative limit
+
+/du/: Upper derivative limit
+
+*Return*: The current output of the PID loop.
+
+** Sim.pidv(sp, pv, kp, ki, kd, lims)
+    
+Runs a velocity PID loop. All limits are optional and will not be applied if they are not defined in /lims/.
+
+*sp*: Set point
+
+*pv*: Process variable
+
+*kp*: Proportional gain
+
+*kd*: Derivative gain
+
+*lims* = {l, u, pl, pu, dl, du}
+
+/l/: Lower PID output limit
+
+/u/: Upper PID output limit
+
+/pl/: Lower proportional limit
+
+/pu/: Upper proportional limit
+
+/dl/: Lower derivative limit
+
+/du/: Upper derivative limit
+
+*Return*: The current output of the velocity PID loop.
+
+** Sim.readData(name)
+
+Read a value from the data field with /name/.
+
+*Return*: The current value of the data field with /name/.
+
+** Sim.writeData(name, data)
+
+Writes /data/ to the data field with /name/.
+
+*Return*: None
+
+** Sim.pause()
+
+Pauses the simulation.
+
+*Return*: None
+
+** Sim.stop()
+
+Stops the simulation.
+
+*Return*: None
+
+** Sim.csvRead(stringData)
+
+Processes /stringData/ as a CSV and splits it into an array of rows. Each row then contains an array of values as the columns.
+
+*Return*: The array of arrays of data.
+
+* Detailed UI Documentation
+   
+** Top Buttons
+
+*Start*: Starts the simulation.
+
+*Start Step*: Starts the simulation but then pauses it before the first step.
+
+*Stop*: Stops the simulation. The simulation cannot be resumed without running the init code again.
+
+*Pause*: Temporarily pauses the simulation.
+
+*Resume*: Resumes the simulation if it was previously paused.
+
+*Step*: Runs a single time step of the simulation.
+
+** Configuration
+    
+This tab holds all of the simulation configuration parameters.
+
+*Simulation Timestep (Milliseconds)*: The \Delta{}t of the simulation.
+
+*Code Run Timestep (Milliseconds)*: How fast each step of the simulation will run.
+It is possible to set this field to zero to force the simulator to run as fast as possible.
+
+*Filename*: The simulation name when saving to a file.
+
+*Save Simulation (Button)*: Downloads the file so it can be opened later.
+
+*Browse (file chooser)*: Uploads a simulation. However, the simulation will not be imported until /open simulation/ is pressed.
+
+*Open Simulation (Button)*: Loads the simulation that is chosen with the /file chooser/. Any unsaved work will be overwritten.
+
+** Data
+    
+This tab can hold larger chunks of data that can be read from or written to from the simulation.
+    
+*[ + ] (button)*: Adds another data field
+
+*/For each data field the layout is as follows:/*
+
+<name> <type> <delete>
+
+<value>
+
+*Name*: The name of the data (that is used to access it in the simulation code).
+
+*Type*: [Short Text, Number, Long Text]
+
+*[ - ] (button)*: Removes this data field.
+
+*Value*: The actual value of the data field.
+
+** Init Code
+
+This tab is for code that will run once at the beginning of the simulation.
+Code appropriate for this section include setting up variables that will be used and reading values from the data field.
+No time sensitive functions (such as integral, derivative) should be called here.
+
+** Step Code
+
+This tab is for code that will run once every time step.
+
+** End Code
+
+This tab is for code that will run when the simulation is stopped (but not if the simulation is paused).
+Code appropriate for this section include writing values to the data fields.
+No time sensitive functions (such as integral, derivative) should be called here.
+
+** Front Panel
+    
+This tab contains the front panel that is generated when the step code runs.
+
+** Log
+
+This tab contains anything that is logged by the user code or if any errors are encountered when running the code.

@@ -1,0 +1,789 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>Step based Javascript Simulator Manual</title>
+<!-- 2016-12-10 Sat 02:37 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="Tiger Huang" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.right  { text-align: center;  }
+  th.left   { text-align: center;   }
+  th.center { text-align: center; }
+  td.right  { text-align: right;  }
+  td.left   { text-align: left;   }
+  td.center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara:nth-child(2) { display: inline; }
+  .footpara { display: block; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">Step based Javascript Simulator Manual</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1. Introduction</a></li>
+<li><a href="#sec-2">2. Overview</a>
+<ul>
+<li><a href="#sec-2-1">2.1. Variables</a></li>
+</ul>
+</li>
+<li><a href="#sec-3">3. Example Simulation</a></li>
+<li><a href="#sec-4">4. Detailed Function Documentation</a>
+<ul>
+<li><a href="#sec-4-1">4.1. Sim.log(text)</a></li>
+<li><a href="#sec-4-2">4.2. Sim.integral(value, min, max)</a></li>
+<li><a href="#sec-4-3">4.3. Sim.derivative(value)</a></li>
+<li><a href="#sec-4-4">4.4. Sim.number_output(position, label, value)</a></li>
+<li><a href="#sec-4-5">4.5. Sim.number_input(position, label, initial_value)</a></li>
+<li><a href="#sec-4-6">4.6. Sim.graph(position, label, limits, inputs)</a></li>
+<li><a href="#sec-4-7">4.7. Sim.nrandom()</a></li>
+<li><a href="#sec-4-8">4.8. Sim.friction(input, ks, kk)</a></li>
+<li><a href="#sec-4-9">4.9. Sim.limit(input, min, max)</a></li>
+<li><a href="#sec-4-10">4.10. Sim.pid(sp, pv, kp, ki, kd, lims)</a></li>
+<li><a href="#sec-4-11">4.11. Sim.pidv(sp, pv, kp, ki, kd, lims)</a></li>
+<li><a href="#sec-4-12">4.12. Sim.readData(name)</a></li>
+<li><a href="#sec-4-13">4.13. Sim.writeData(name, data)</a></li>
+<li><a href="#sec-4-14">4.14. Sim.pause()</a></li>
+<li><a href="#sec-4-15">4.15. Sim.stop()</a></li>
+<li><a href="#sec-4-16">4.16. Sim.csvRead(stringData)</a></li>
+</ul>
+</li>
+<li><a href="#sec-5">5. Detailed UI Documentation</a>
+<ul>
+<li><a href="#sec-5-1">5.1. Top Buttons</a></li>
+<li><a href="#sec-5-2">5.2. Configuration</a></li>
+<li><a href="#sec-5-3">5.3. Data</a></li>
+<li><a href="#sec-5-4">5.4. Init Code</a></li>
+<li><a href="#sec-5-5">5.5. Step Code</a></li>
+<li><a href="#sec-5-6">5.6. End Code</a></li>
+<li><a href="#sec-5-7">5.7. Front Panel</a></li>
+<li><a href="#sec-5-8">5.8. Log</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> Introduction</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+This simulator is written in Javascript and uses Euler's method to compute derivatives and integrals.
+There are several other functions to make it convienient to simulate various physical systems.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> Overview</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+The user language of this simulator is also Javascript. Any simulator specific functions are called by Sim.&lt;function&gt;.
+Any other standard Javascript functions and classes can be used as well.
+</p>
+</div>
+
+<div id="outline-container-sec-2-1" class="outline-3">
+<h3 id="sec-2-1"><span class="section-number-3">2.1</span> Variables</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+All of the user variables are stored in two objects called <i>ins</i> and <i>outs</i>.
+</p>
+
+<p>
+<i>ins</i> is the state of the simulator from the previous step.
+</p>
+
+<p>
+<i>outs</i> is the state of the simulator as a result of the current step.
+</p>
+
+<p>
+A '#' can be prepended in front of any variable name so that <i>ins</i> or <i>outs</i> is automatically prepended depending on if it is assignment or not. An example is shown below.
+</p>
+
+<p>
+Original Code:
+</p>
+
+<p>
+<code>#output = #foo + #bar;</code>
+</p>
+
+<p>
+Modified Code:
+</p>
+
+<p>
+<code>outs.output = ins.foo + ins.bar;</code>
+</p>
+
+<p>
+This text substitution is to reduce or eliminate the need to explicitly specify if a simulation variable is an output or input.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3"><span class="section-number-2">3</span> Example Simulation</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+<a href="http://tigerhuang.com/simulation/pid-controller.sim">pid-controller.sim</a>
+</p>
+
+<p>
+This example simulation simulates a fly wheel and controls it with a PIDF loop.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-4" class="outline-2">
+<h2 id="sec-4"><span class="section-number-2">4</span> Detailed Function Documentation</h2>
+<div class="outline-text-2" id="text-4">
+</div><div id="outline-container-sec-4-1" class="outline-3">
+<h3 id="sec-4-1"><span class="section-number-3">4.1</span> Sim.log(text)</h3>
+<div class="outline-text-3" id="text-4-1">
+<p>
+Logs <i>text</i> into the log tab of the simulator.
+</p>
+
+<p>
+<b>Return</b>: None
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-4-2" class="outline-3">
+<h3 id="sec-4-2"><span class="section-number-3">4.2</span> Sim.integral(value, min, max)</h3>
+<div class="outline-text-3" id="text-4-2">
+<p>
+Integrates <i>value</i> over time.
+If min and max are passed in and defined, the output value of the integral will be limited between min and max.
+The min and max can be set seperately as well.
+</p>
+
+<p>
+<b>Return</b>: The current value of the integral.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-4-3" class="outline-3">
+<h3 id="sec-4-3"><span class="section-number-3">4.3</span> Sim.derivative(value)</h3>
+<div class="outline-text-3" id="text-4-3">
+<p>
+Finds the derivative of <i>value</i> at each point in time.
+</p>
+
+<p>
+<b>Return</b>: The derivative of the input
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-4-4" class="outline-3">
+<h3 id="sec-4-4"><span class="section-number-3">4.4</span> Sim.number_output(position, label, value)</h3>
+<div class="outline-text-3" id="text-4-4">
+<p>
+Creates a text number output at <i>position</i> with <i>label</i> displaying <i>value</i>.
+</p>
+
+<p>
+<b>Position</b> = 'top: &lt;dist from top&gt;px; left: &lt;dist from left&gt;px;'
+</p>
+
+<p>
+<b>Return</b>: None
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-4-5" class="outline-3">
+<h3 id="sec-4-5"><span class="section-number-3">4.5</span> Sim.number_input(position, label, initial_value)</h3>
+<div class="outline-text-3" id="text-4-5">
+<p>
+Creates a text number input at <i>position</i> with <i>label</i> with <i>initial_value</i>.
+The control is only set to <i>initial_value</i> once at the beginning of the simulation.
+</p>
+
+<p>
+<b>Position</b> = 'top: &lt;dist from top&gt;px; left: &lt;dist from left&gt;px;'
+</p>
+
+<p>
+<b>Return</b>: The value that is entered into this control.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-4-6" class="outline-3">
+<h3 id="sec-4-6"><span class="section-number-3">4.6</span> Sim.graph(position, label, limits, inputs)</h3>
+<div class="outline-text-3" id="text-4-6">
+<p>
+Creates a graph output that has settings that can be dynamically modified. The only parameter that cannot be modified at run time is the number of plots drawn.
+</p>
+
+<p>
+<b>Position</b> = 'top: &lt;dist from top&gt;px; left: &lt;dist from left&gt;px; width: &lt;width&gt;px; height: &lt;height&gt;px;'
+</p>
+
+<p>
+<b>Limits</b> = {t_width: &lt;time to show&gt;, t_spacing: &lt;time between vertical lines&gt;,
+            maxs:[&lt;a max&gt;, &lt;b max&gt;, &#x2026;], mins:[&lt;a min&gt;, &lt;b min&gt;, &#x2026;],
+            spacings: [&lt;a spacing&gt;, &lt;b spacing&gt;, &#x2026;], colors: [&lt;a color&gt;, &lt;b color&gt;, &#x2026;]}
+</p>
+
+<p>
+<i>t_width</i>: The amount of time to show on the horizontal axis.
+</p>
+
+<p>
+<i>t_spacing</i>: The amount of time between each set of time labels.
+</p>
+
+<p>
+<i>maxs</i>: An array of maximum values for each plot.
+</p>
+
+<p>
+<i>mins</i>: An array of minimum values for each plot. The length must match <i>maxs</i>.
+</p>
+
+<p>
+<i>spacings</i>: An array of spacings (the amount of units between each set of labels), one for each plot. The length must match <i>maxs</i>.
+</p>
+
+<p>
+<i>colors</i>: An array of colors for each plot. The length must match <i>maxs</i>.
+</p>
+
+<p>
+<b>Inputs</b> = An array of values to plot. The length must match <i>Limits.maxs</i>
+</p>
+
+<p>
+<b>Return</b>: None
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-4-7" class="outline-3">
+<h3 id="sec-4-7"><span class="section-number-3">4.7</span> Sim.nrandom()</h3>
+<div class="outline-text-3" id="text-4-7">
+<p>
+<b>Return</b>: A stream of numbers (one per call) with a gaussian distribution (mean = 0, variance = 1)
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-4-8" class="outline-3">
+<h3 id="sec-4-8"><span class="section-number-3">4.8</span> Sim.friction(input, ks, kk)</h3>
+<div class="outline-text-3" id="text-4-8">
+<p>
+Simulates a nonlinear (static + dynamic) friction system.
+</p>
+
+<p>
+The static friction (<i>ks</i>) is a constant amount that acts in the opposite direction of <i>input</i>.
+The dynamic friction (<i>kk</i>) is multiplied by <i>input</i> but acts in the opposite direction of <i>input</i>.
+</p>
+
+<p>
+<b>Return</b>: The amount of 'force' exerted by the static and dynamic friction.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-4-9" class="outline-3">
+<h3 id="sec-4-9"><span class="section-number-3">4.9</span> Sim.limit(input, min, max)</h3>
+<div class="outline-text-3" id="text-4-9">
+<p>
+Limits <i>input</i> between <i>min</i> and <i>max</i>.
+<i>min</i> and <i>max</i> are optional arguments. If nothing is passed in for them or if they are undefined, that limit is not used. The min and max can be set seperately.
+</p>
+
+<p>
+<b>Return</b>: The <i>input</i> limited between <i>min</i> and <i>max</i>.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-4-10" class="outline-3">
+<h3 id="sec-4-10"><span class="section-number-3">4.10</span> Sim.pid(sp, pv, kp, ki, kd, lims)</h3>
+<div class="outline-text-3" id="text-4-10">
+<p>
+Runs a PID loop. All limits are optional and will not be applied if they are not defined in <i>lims</i>.
+</p>
+
+<p>
+<b>sp</b>: Set point
+</p>
+
+<p>
+<b>pv</b>: Process variable
+</p>
+
+<p>
+<b>kp</b>: Proportional gain
+</p>
+
+<p>
+<b>ki</b>: Integral gain
+</p>
+
+<p>
+<b>kd</b>: Derivative gain
+</p>
+
+<p>
+<b>lims</b> = {l, u, pl, pu, il, iu, dl, du}
+</p>
+
+<p>
+<i>l</i>: Lower PID output limit
+</p>
+
+<p>
+<i>u</i>: Upper PID output limit
+</p>
+
+<p>
+<i>pl</i>: Lower proportional limit
+</p>
+
+<p>
+<i>pu</i>: Upper proportional limit
+</p>
+
+<p>
+<i>il</i>: Lower integral limit
+</p>
+
+<p>
+<i>iu</i>: Upper integral limit
+</p>
+
+<p>
+<i>dl</i>: Lower derivative limit
+</p>
+
+<p>
+<i>du</i>: Upper derivative limit
+</p>
+
+<p>
+<b>Return</b>: The current output of the PID loop.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-4-11" class="outline-3">
+<h3 id="sec-4-11"><span class="section-number-3">4.11</span> Sim.pidv(sp, pv, kp, ki, kd, lims)</h3>
+<div class="outline-text-3" id="text-4-11">
+<p>
+Runs a velocity PID loop. All limits are optional and will not be applied if they are not defined in <i>lims</i>.
+</p>
+
+<p>
+<b>sp</b>: Set point
+</p>
+
+<p>
+<b>pv</b>: Process variable
+</p>
+
+<p>
+<b>kp</b>: Proportional gain
+</p>
+
+<p>
+<b>kd</b>: Derivative gain
+</p>
+
+<p>
+<b>lims</b> = {l, u, pl, pu, dl, du}
+</p>
+
+<p>
+<i>l</i>: Lower PID output limit
+</p>
+
+<p>
+<i>u</i>: Upper PID output limit
+</p>
+
+<p>
+<i>pl</i>: Lower proportional limit
+</p>
+
+<p>
+<i>pu</i>: Upper proportional limit
+</p>
+
+<p>
+<i>dl</i>: Lower derivative limit
+</p>
+
+<p>
+<i>du</i>: Upper derivative limit
+</p>
+
+<p>
+<b>Return</b>: The current output of the velocity PID loop.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-4-12" class="outline-3">
+<h3 id="sec-4-12"><span class="section-number-3">4.12</span> Sim.readData(name)</h3>
+<div class="outline-text-3" id="text-4-12">
+<p>
+Read a value from the data field with <i>name</i>.
+</p>
+
+<p>
+<b>Return</b>: The current value of the data field with <i>name</i>.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-4-13" class="outline-3">
+<h3 id="sec-4-13"><span class="section-number-3">4.13</span> Sim.writeData(name, data)</h3>
+<div class="outline-text-3" id="text-4-13">
+<p>
+Writes <i>data</i> to the data field with <i>name</i>.
+</p>
+
+<p>
+<b>Return</b>: None
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-4-14" class="outline-3">
+<h3 id="sec-4-14"><span class="section-number-3">4.14</span> Sim.pause()</h3>
+<div class="outline-text-3" id="text-4-14">
+<p>
+Pauses the simulation.
+</p>
+
+<p>
+<b>Return</b>: None
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-4-15" class="outline-3">
+<h3 id="sec-4-15"><span class="section-number-3">4.15</span> Sim.stop()</h3>
+<div class="outline-text-3" id="text-4-15">
+<p>
+Stops the simulation.
+</p>
+
+<p>
+<b>Return</b>: None
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-4-16" class="outline-3">
+<h3 id="sec-4-16"><span class="section-number-3">4.16</span> Sim.csvRead(stringData)</h3>
+<div class="outline-text-3" id="text-4-16">
+<p>
+Processes <i>stringData</i> as a CSV and splits it into an array of rows. Each row then contains an array of values as the columns.
+</p>
+
+<p>
+<b>Return</b>: The array of arrays of data.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-5" class="outline-2">
+<h2 id="sec-5"><span class="section-number-2">5</span> Detailed UI Documentation</h2>
+<div class="outline-text-2" id="text-5">
+</div><div id="outline-container-sec-5-1" class="outline-3">
+<h3 id="sec-5-1"><span class="section-number-3">5.1</span> Top Buttons</h3>
+<div class="outline-text-3" id="text-5-1">
+<p>
+<b>Start</b>: Starts the simulation.
+</p>
+
+<p>
+<b>Start Step</b>: Starts the simulation but then pauses it before the first step.
+</p>
+
+<p>
+<b>Stop</b>: Stops the simulation. The simulation cannot be resumed without running the init code again.
+</p>
+
+<p>
+<b>Pause</b>: Temporarily pauses the simulation.
+</p>
+
+<p>
+<b>Resume</b>: Resumes the simulation if it was previously paused.
+</p>
+
+<p>
+<b>Step</b>: Runs a single time step of the simulation.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-5-2" class="outline-3">
+<h3 id="sec-5-2"><span class="section-number-3">5.2</span> Configuration</h3>
+<div class="outline-text-3" id="text-5-2">
+<p>
+This tab holds all of the simulation configuration parameters.
+</p>
+
+<p>
+<b>Simulation Timestep (Milliseconds)</b>: The &Delta;t of the simulation.
+</p>
+
+<p>
+<b>Code Run Timestep (Milliseconds)</b>: How fast each step of the simulation will run.
+It is possible to set this field to zero to force the simulator to run as fast as possible.
+</p>
+
+<p>
+<b>Filename</b>: The simulation name when saving to a file.
+</p>
+
+<p>
+<b>Save Simulation (Button)</b>: Downloads the file so it can be opened later.
+</p>
+
+<p>
+<b>Browse (file chooser)</b>: Uploads a simulation. However, the simulation will not be imported until <i>open simulation</i> is pressed.
+</p>
+
+<p>
+<b>Open Simulation (Button)</b>: Loads the simulation that is chosen with the <i>file chooser</i>. Any unsaved work will be overwritten.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-5-3" class="outline-3">
+<h3 id="sec-5-3"><span class="section-number-3">5.3</span> Data</h3>
+<div class="outline-text-3" id="text-5-3">
+<p>
+This tab can hold larger chunks of data that can be read from or written to from the simulation.
+</p>
+
+<p>
+<b>[ + ] (button)</b>: Adds another data field
+</p>
+
+<p>
+<b><i>For each data field the layout is as follows:</i></b>
+</p>
+
+<p>
+&lt;name&gt; &lt;type&gt; &lt;delete&gt;
+</p>
+
+<p>
+&lt;value&gt;
+</p>
+
+<p>
+<b>Name</b>: The name of the data (that is used to access it in the simulation code).
+</p>
+
+<p>
+<b>Type</b>: [Short Text, Number, Long Text]
+</p>
+
+<p>
+<b>[ - ] (button)</b>: Removes this data field.
+</p>
+
+<p>
+<b>Value</b>: The actual value of the data field.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-5-4" class="outline-3">
+<h3 id="sec-5-4"><span class="section-number-3">5.4</span> Init Code</h3>
+<div class="outline-text-3" id="text-5-4">
+<p>
+This tab is for code that will run once at the beginning of the simulation.
+Code appropriate for this section include setting up variables that will be used and reading values from the data field.
+No time sensitive functions (such as integral, derivative) should be called here.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-5-5" class="outline-3">
+<h3 id="sec-5-5"><span class="section-number-3">5.5</span> Step Code</h3>
+<div class="outline-text-3" id="text-5-5">
+<p>
+This tab is for code that will run once every time step.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-5-6" class="outline-3">
+<h3 id="sec-5-6"><span class="section-number-3">5.6</span> End Code</h3>
+<div class="outline-text-3" id="text-5-6">
+<p>
+This tab is for code that will run when the simulation is stopped (but not if the simulation is paused).
+Code appropriate for this section include writing values to the data fields.
+No time sensitive functions (such as integral, derivative) should be called here.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-5-7" class="outline-3">
+<h3 id="sec-5-7"><span class="section-number-3">5.7</span> Front Panel</h3>
+<div class="outline-text-3" id="text-5-7">
+<p>
+This tab contains the front panel that is generated when the step code runs.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-5-8" class="outline-3">
+<h3 id="sec-5-8"><span class="section-number-3">5.8</span> Log</h3>
+<div class="outline-text-3" id="text-5-8">
+<p>
+This tab contains anything that is logged by the user code or if any errors are encountered when running the code.
+</p>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: Tiger Huang</p>
+<p class="date">Created: 2016-12-10 Sat 02:37</p>
+<p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.1.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>

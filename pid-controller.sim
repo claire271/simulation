@@ -1,0 +1,81 @@
+﻿////////////////////
+//Configuration
+////////////////////
+timestep 20
+codestep 20
+////////////////////
+//Data
+////////////////////
+//////////////////
+kf
+number
+0.0119402985074627
+//////////////////
+kp
+number
+0
+//////////////////
+ki
+number
+0
+//////////////////
+kd
+number
+.1
+////////////////////
+//Init Code
+////////////////////
+//Input to the motor
+#in = 0;
+//Other scaling parameters
+#km = 60;
+#kr = 0;
+//Friction parameters
+#ks = .1;
+#kk = .7;
+//Mass
+#m = .6;
+//Angular acceleration and velocity
+#a = 0;
+#v = 0;
+
+//Pid constants
+#kf = Sim.readData('kf');
+#kp = Sim.readData('kp');
+#ki = Sim.readData('ki');
+#kd = Sim.readData('kd');
+
+//Pid variables
+#sp = 0;
+#ksr = 0;
+#pv = 0;
+////////////////////
+//Step Code
+////////////////////
+#sp = Sim.number_input('top:0px;left:0px','Set Point', #sp);
+
+#kf = Sim.number_input('top:0px;left:200px','kf', #kf);
+#kp = Sim.number_input('top:0px;left:400px','kp', #kp);
+#ki = Sim.number_input('top:0px;left:600px','ki', #ki);
+#kd = Sim.number_input('top:0px;left:800px','kd', #kd);
+
+#a = (#in * #km - Sim.friction(#v, #ks, #kk) + Sim.nrandom() * #kr)/#m;
+#v = Sim.integral(#a);
+#pv = #v + Sim.nrandom() * #ksr;
+
+//#in = Sim.limit(Sim.pid(#sp, #pv, #kp, #ki, #kd, {il: -.1, iu: .1}) + #kf * #sp, 0, 1);
+#in = Sim.limit(Sim.pidv(#sp, #pv, #kp, #kd, {pl: -.1, pu: .1}) + #kf * #sp, 0, 1);
+
+
+Sim.graph('top:50px;left:0px;width:1000px;height:500px','Graph',
+{t_width: 10, t_spacing: 1, maxs: [1, 80, 80], mins: [0, 0, 0], spacings: [.25, 10, 10], colors: ['red', 'blue', 'green']},[#in, #v, #sp]);
+
+
+////////////////////
+//End Code
+////////////////////
+//Pid constants
+Sim.writeData('kf', #kf);
+Sim.writeData('kp', #kp);
+Sim.writeData('ki', #ki);
+Sim.writeData('kd', #kd);
